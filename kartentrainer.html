@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kartenbilder">
+<meta name="theme-color" content="#133327">
+<title>Kartenbilder</title>
+<style>
+:root{
+  --felt:#133327;
+  --felt-2:#1B4234;
+  --line:#2E5C4A;
+  --cream:#EFE9DB;
+  --cream-dim:#A9BCB0;
+  --gold:#D8B45A;
+  --warn:#E0806B;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--felt);
+  color:var(--cream);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  font-size:16px;line-height:1.5;
+  padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  min-height:100vh;
+  overscroll-behavior:none;
+}
+.wrap{max-width:480px;margin:0 auto;padding:16px 18px 32px}
+h1{font-family:Georgia,"Times New Roman",serif;font-size:20px;font-weight:400;margin:4px 0 18px;letter-spacing:.01em}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--line);margin-bottom:22px}
+.tab{flex:1;background:none;border:0;color:var(--cream-dim);font-size:15px;padding:12px 4px;border-bottom:2px solid transparent;font-family:inherit}
+.tab.on{color:var(--cream);border-bottom-color:var(--gold)}
+button{font-family:inherit;touch-action:manipulation;cursor:pointer}
+.btn{
+  display:block;width:100%;min-height:56px;
+  background:none;border:1px solid var(--line);border-radius:10px;
+  color:var(--cream);font-size:17px;padding:14px;
+}
+.btn:active{background:var(--felt-2)}
+.btn.solid{background:var(--cream);color:var(--felt);border-color:var(--cream)}
+.btn.solid:active{background:#DDD6C6}
+.btn.quiet{color:var(--cream-dim);font-size:15px;min-height:48px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.suits{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.suit{display:flex;align-items:center;gap:10px;min-height:52px;padding:0 14px;border:1px solid var(--line);border-radius:10px;font-size:16px;color:var(--cream-dim);background:none}
+.suit.on{color:var(--cream);border-color:var(--cream-dim);background:var(--felt-2)}
+.sym{font-size:20px}
+.sym.r{color:#E08074}
+.meta{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--cream-dim);margin-bottom:14px}
+.stage{display:flex;justify-content:center;margin-bottom:22px;min-height:280px;align-items:center}
+.panel{background:var(--felt-2);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px}
+.lbl{font-size:13px;color:var(--cream-dim);margin-bottom:6px}
+.shown{font-family:Georgia,serif;font-size:22px;margin-bottom:12px;min-height:30px}
+.shown.empty{color:var(--cream-dim);font-size:16px;font-family:inherit}
+input[type=text]{
+  width:100%;min-height:48px;background:var(--felt);border:1px solid var(--line);
+  border-radius:8px;color:var(--cream);font-family:inherit;font-size:16px;padding:10px 12px;
+}
+input[type=text]::placeholder{color:#5E7A6B}
+input[type=text]:focus{outline:none;border-color:var(--gold)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px}
+.stat{background:var(--felt-2);border-radius:10px;padding:14px}
+.stat b{display:block;font-size:26px;font-weight:400;font-family:Georgia,serif;margin-top:2px}
+.list{margin-bottom:22px}
+.item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:15px}
+.item .c{font-family:Georgia,serif;font-size:17px;min-width:52px}
+.item .v{color:var(--cream-dim);font-size:14px;text-align:right;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.red{color:#E08074}
+.hint{font-size:14px;color:var(--cream-dim);margin:0 0 18px}
+.err{color:var(--warn);font-size:14px;min-height:20px;margin-bottom:8px}
+.lib-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)}
+.lib-row .c{font-family:Georgia,serif;font-size:17px;width:56px;flex:none}
+.lib-row input{min-height:42px}
+.sec{font-size:13px;color:var(--cream-dim);margin:26px 0 8px}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Kartenbilder</h1>
+
+  <div class="tabs">
+    <button class="tab on" data-t="train">Training</button>
+    <button class="tab" data-t="lib">Bilder</button>
+  </div>
+
+  <!-- TRAINING -->
+  <div id="v-train">
+
+    <div id="setup">
+      <p class="hint">Fang mit einer Farbe an. Erst wenn die sitzt, kommt die nächste dazu.</p>
+      <div class="suits" id="suits"></div>
+      <button class="suit" id="weakmode" style="width:100%;margin-bottom:14px">
+        <span class="sym">↻</span><span>Schwache Karten häufiger</span>
+      </button>
+      <div class="err" id="err"></div>
+      <button class="btn solid" id="start">Runde starten</button>
+    </div>
+
+    <div id="round" class="hide">
+      <div class="meta">
+        <span id="prog"></span>
+        <button class="btn quiet" id="abort" style="width:auto;min-height:36px;padding:6px 12px;border:0;">Abbrechen</button>
+      </div>
+      <div class="stage" id="stage"></div>
+
+      <div id="ask">
+        <div class="row">
+          <button class="btn solid" id="hit">Bild da</button>
+          <button class="btn" id="miss">Kein Bild</button>
+        </div>
+      </div>
+
+      <div id="reveal" class="hide">
+        <div class="panel">
+          <div class="lbl">Dein Bild</div>
+          <div class="shown" id="shown"></div>
+          <input type="text" id="imgin" placeholder="Bild eintragen" autocomplete="off" autocapitalize="sentences">
+        </div>
+        <button class="btn solid" id="next">Weiter</button>
+      </div>
+    </div>
+
+    <div id="result" class="hide">
+      <div class="stats">
+        <div class="stat"><span class="lbl">Treffer</span><b id="r1"></b></div>
+        <div class="stat"><span class="lbl">Schnitt</span><b id="r2"></b></div>
+      </div>
+      <div class="list" id="weaklist"></div>
+      <button class="btn solid" id="again">Neue Runde</button>
+    </div>
+
+  </div>
+
+  <!-- BIBLIOTHEK -->
+  <div id="v-lib" class="hide">
+    <p class="hint">Hier legst du fest, welches Bild zu welcher Karte gehört. Wird automatisch gespeichert.</p>
+    <div id="libbody"></div>
+    <div class="sec">Zurücksetzen</div>
+    <button class="btn quiet" id="clrstats" style="margin-bottom:10px">Statistik löschen</button>
+    <button class="btn quiet" id="clrimgs">Alle Bilder löschen</button>
+  </div>
+</div>
+
+<script>
+(function(){
+var SUITS=[{s:"\u2665",n:"Herz",r:1},{s:"\u2666",n:"Karo",r:1},{s:"\u2660",n:"Pik",r:0},{s:"\u2663",n:"Kreuz",r:0}];
+var RANKS=["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+var LAY={
+ "2":[[50,17],[50,83]],
+ "3":[[50,17],[50,50],[50,83]],
+ "4":[[28,17],[72,17],[28,83],[72,83]],
+ "5":[[28,17],[72,17],[50,50],[28,83],[72,83]],
+ "6":[[28,17],[72,17],[28,50],[72,50],[28,83],[72,83]],
+ "7":[[28,17],[72,17],[50,33],[28,50],[72,50],[28,83],[72,83]],
+ "8":[[28,17],[72,17],[50,33],[28,50],[72,50],[50,67],[28,83],[72,83]],
+ "9":[[28,17],[72,17],[28,39],[72,39],[50,50],[28,61],[72,61],[28,83],[72,83]],
+ "10":[[28,17],[72,17],[50,28],[28,39],[72,39],[28,61],[72,61],[50,72],[28,83],[72,83]]
+};
+var $=function(s){return document.querySelector(s)};
+var $$=function(s){return [].slice.call(document.querySelectorAll(s))};
+var isRed=function(s){return s==="\u2665"||s==="\u2666"};
+
+var imgs=load("kt.images",{});
+var stats=load("kt.stats",{});
+var picked=load("kt.suits",["\u2665"]);
+var weakMode=load("kt.weak",false);
+var deck=[],idx=0,round=[],t0=0;
+
+function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function key(c){return c.s+c.r}
+
+function cardSVG(c){
+  var col=isRed(c.s)?"#B02A20":"#1A1A1A";
+  var o='<svg viewBox="0 0 100 140" width="196" height="274" role="img" aria-label="'+c.r+' '+c.s+'">';
+  o+='<rect x="1" y="1" width="98" height="138" rx="7" fill="#FCFBF7" stroke="#C9C4B6" stroke-width="0.7"/>';
+  o+='<g fill="'+col+'" font-family="Georgia,serif" text-anchor="middle">';
+  o+='<text x="10" y="17" font-size="13">'+c.r+'</text><text x="10" y="28" font-size="11">'+c.s+'</text>';
+  o+='<g transform="rotate(180 50 70)"><text x="10" y="17" font-size="13">'+c.r+'</text><text x="10" y="28" font-size="11">'+c.s+'</text></g>';
+  if(c.r==="A"){
+    o+='<text x="50" y="85" font-size="46">'+c.s+'</text>';
+  }else if(c.r==="J"||c.r==="Q"||c.r==="K"){
+    o+='<rect x="22" y="24" width="56" height="92" rx="3" fill="none" stroke="'+col+'" stroke-width="0.7"/>';
+    o+='<line x1="22" y1="70" x2="78" y2="70" stroke="'+col+'" stroke-width="0.5"/>';
+    o+='<text x="50" y="53" font-size="23">'+c.r+'</text><text x="50" y="65" font-size="14">'+c.s+'</text>';
+    o+='<g transform="rotate(180 50 70)"><text x="50" y="53" font-size="23">'+c.r+'</text><text x="50" y="65" font-size="14">'+c.s+'</text></g>';
+  }else{
+    LAY[c.r].forEach(function(p){
+      var x=p[0],y=p[1]*1.32+7;
+      var rot=p[1]>50?' transform="rotate(180 '+x+' '+(y-4.6)+')"':'';
+      o+='<text x="'+x+'" y="'+y+'" font-size="15"'+rot+'>'+c.s+'</text>';
+    });
+  }
+  return o+'</g></svg>';
+}
+
+/* ---- Setup ---- */
+function drawSuits(){
+  $("#suits").innerHTML=SUITS.map(function(x){
+    var on=picked.indexOf(x.s)>-1;
+    return '<button class="suit'+(on?' on':'')+'" data-s="'+x.s+'"><span class="sym'+(x.r?' r':'')+'">'+x.s+'</span><span>'+x.n+'</span></button>';
+  }).join("");
+  $$("#suits .suit").forEach(function(b){
+    b.onclick=function(){
+      var s=b.dataset.s,i=picked.indexOf(s);
+      if(i>-1)picked.splice(i,1);else picked.push(s);
+      save("kt.suits",picked);drawSuits();$("#err").textContent="";
+    };
+  });
+  $("#weakmode").className="suit"+(weakMode?" on":"");
+}
+
+function buildDeck(){
+  var d=[];
+  picked.forEach(function(s){RANKS.forEach(function(r){d.push({s:s,r:r})})});
+  if(weakMode){
+    var extra=[];
+    d.forEach(function(c){
+      var st=stats[key(c)];
+      if(!st||st.miss>st.hit||(st.avg&&st.avg>4))extra.push(c);
+    });
+    d=d.concat(extra);
+  }
+  for(var i=d.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=d[i];d[i]=d[j];d[j]=t}
+  return d;
+}
+
+/* ---- Runde ---- */
+function startRound(){
+  if(!picked.length){$("#err").textContent="Mindestens eine Farbe wählen";return}
+  deck=buildDeck();idx=0;round=[];
+  $("#setup").className="hide";$("#result").className="hide";$("#round").className="";
+  showCard();
+}
+function showCard(){
+  var c=deck[idx];
+  $("#stage").innerHTML=cardSVG(c);
+  $("#prog").textContent=(idx+1)+" von "+deck.length;
+  $("#ask").className="";$("#reveal").className="hide";
+  t0=Date.now();
+}
+function answer(ok){
+  var dt=(Date.now()-t0)/1000, c=deck[idx], k=key(c);
+  round.push({c:c,ok:ok,t:dt});
+  var st=stats[k]||{hit:0,miss:0,avg:0};
+  if(ok){st.avg=st.hit?(st.avg*st.hit+dt)/(st.hit+1):dt;st.hit++}else{st.miss++}
+  stats[k]=st;save("kt.stats",stats);
+  var v=imgs[k];
+  $("#shown").textContent=v||"Noch kein Bild festgelegt";
+  $("#shown").className=v?"shown":"shown empty";
+  $("#imgin").value=v||"";
+  $("#ask").className="hide";$("#reveal").className="";
+}
+function nextCard(){
+  var v=$("#imgin").value.trim(),k=key(deck[idx]);
+  if(v){imgs[k]=v;save("kt.images",imgs)}
+  idx++;
+  if(idx>=deck.length)finish();else showCard();
+}
+function finish(){
+  $("#round").className="hide";$("#result").className="";
+  var hits=round.filter(function(r){return r.ok});
+  $("#r1").textContent=Math.round(hits.length/round.length*100)+"%";
+  var avg=hits.length?hits.reduce(function(a,r){return a+r.t},0)/hits.length:0;
+  $("#r2").textContent=hits.length?avg.toFixed(1)+"s":"\u2014";
+  var weak=round.filter(function(r){return !r.ok||r.t>4})
+    .sort(function(a,b){return (a.ok?1:0)-(b.ok?1:0)||b.t-a.t}).slice(0,10);
+  if(!weak.length){
+    $("#weaklist").innerHTML='<p class="hint">Alles unter vier Sekunden. Nimm eine Farbe dazu.</p>';
+  }else{
+    $("#weaklist").innerHTML='<div class="lbl" style="margin-bottom:6px">Wackelkandidaten</div>'+
+      weak.map(function(r){
+        return '<div class="item"><span class="c'+(isRed(r.c.s)?" red":"")+'">'+r.c.s+' '+r.c.r+'</span>'+
+          '<span class="v">'+(imgs[key(r.c)]||"kein Bild")+'</span>'+
+          '<span class="v" style="flex:none">'+(r.ok?r.t.toFixed(1)+"s":"\u2716")+'</span></div>';
+      }).join("");
+  }
+}
+function toSetup(){
+  $("#round").className="hide";$("#result").className="hide";$("#setup").className="";
+}
+
+/* ---- Bibliothek ---- */
+function drawLib(){
+  var h="";
+  SUITS.forEach(function(x){
+    h+='<div class="sec">'+x.n+'</div>';
+    RANKS.forEach(function(r){
+      var k=x.s+r;
+      h+='<div class="lib-row"><span class="c'+(x.r?" red":"")+'">'+x.s+' '+r+'</span>'+
+         '<input type="text" data-k="'+k+'" value="'+(imgs[k]||"").replace(/"/g,"&quot;")+'" placeholder="Bild" autocomplete="off"></div>';
+    });
+  });
+  $("#libbody").innerHTML=h;
+  $$("#libbody input").forEach(function(el){
+    el.addEventListener("change",function(){
+      var v=el.value.trim();
+      if(v)imgs[el.dataset.k]=v;else delete imgs[el.dataset.k];
+      save("kt.images",imgs);
+    });
+  });
+}
+
+/* ---- Wiring ---- */
+$$(".tab").forEach(function(b){
+  b.onclick=function(){
+    $$(".tab").forEach(function(x){x.className="tab"});
+    b.className="tab on";
+    var lib=b.dataset.t==="lib";
+    $("#v-train").className=lib?"hide":"";
+    $("#v-lib").className=lib?"":"hide";
+    if(lib)drawLib();
+  };
+});
+$("#weakmode").onclick=function(){weakMode=!weakMode;save("kt.weak",weakMode);drawSuits()};
+$("#start").onclick=startRound;
+$("#hit").onclick=function(){answer(true)};
+$("#miss").onclick=function(){answer(false)};
+$("#next").onclick=nextCard;
+$("#abort").onclick=toSetup;
+$("#again").onclick=toSetup;
+$("#imgin").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();$("#imgin").blur();nextCard()}});
+$("#clrstats").onclick=function(){if(confirm("Alle Zeiten und Trefferquoten löschen?")){stats={};save("kt.stats",stats)}};
+$("#clrimgs").onclick=function(){if(confirm("Alle hinterlegten Bilder löschen?")){imgs={};save("kt.images",imgs);drawLib()}};
+
+drawSuits();
+
+var mf={name:"Kartenbilder",short_name:"Kartenbilder",display:"standalone",background_color:"#133327",theme_color:"#133327",start_url:".",
+ icons:[{src:"data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" fill="#133327"/><rect x="46" y="30" width="100" height="132" rx="12" fill="#FCFBF7"/><text x="96" y="120" font-size="72" font-family="Georgia,serif" text-anchor="middle" fill="#B02A20">&#9829;</text></svg>'),sizes:"192x192",type:"image/svg+xml"}]};
+var l=document.createElement("link");
+l.rel="manifest";
+l.href=URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:"application/json"}));
+document.head.appendChild(l);
+})();
+</script>
+</body>
+</html>
