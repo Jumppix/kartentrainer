@@ -114,8 +114,8 @@ input[type=text]:focus{outline:none;border-color:var(--gold)}
 
 <script>
 (function(){
-var SUITS=[{s:"\u2665",n:"Herz",r:1},{s:"\u2666",n:"Karo",r:1},{s:"\u2660",n:"Pik",r:0},{s:"\u2663",n:"Kreuz",r:0}];
-var VALS=["7","8","9","B","D","K","10","A"];
+var SUITS=[{s:"\u2663",n:"Kreuz",r:0},{s:"\u2660",n:"Pik",r:0},{s:"\u2665",n:"Herz",r:1},{s:"\u2666",n:"Karo",r:1}];
+var VALS=["7","8","9","10","J","D","K","A"];
 var MARK=["Feuer","Wasser","Schnee"];
 var LAY={
  "7":[[28,17],[72,17],[50,33],[28,50],[72,50],[28,83],[72,83]],
@@ -152,7 +152,7 @@ function cardSVG(c,w){
   o+='<text x="10" y="17" font-size="13">'+c.r+'</text><text x="10" y="28" font-size="11">'+c.s+'</text>';
   o+='<g transform="rotate(180 50 70)"><text x="10" y="17" font-size="13">'+c.r+'</text><text x="10" y="28" font-size="11">'+c.s+'</text></g>';
   if(c.r==="A"){o+='<text x="50" y="85" font-size="46">'+c.s+'</text>'}
-  else if(c.r==="B"||c.r==="D"||c.r==="K"){
+  else if(c.r==="J"||c.r==="D"||c.r==="K"){
     o+='<rect x="22" y="24" width="56" height="92" rx="3" fill="none" stroke="'+col+'" stroke-width="0.7"/>';
     o+='<line x1="22" y1="70" x2="78" y2="70" stroke="'+col+'" stroke-width="0.5"/>';
     o+='<text x="50" y="53" font-size="23">'+c.r+'</text><text x="50" y="65" font-size="14">'+c.s+'</text>';
