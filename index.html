@@ -6,157 +6,118 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Kartenbilder">
+<meta name="apple-mobile-web-app-title" content="Kartenpalast">
 <meta name="theme-color" content="#133327">
-<title>Kartenbilder</title>
+<title>Kartenpalast</title>
 <style>
 :root{
-  --felt:#133327;
-  --felt-2:#1B4234;
-  --line:#2E5C4A;
-  --cream:#EFE9DB;
-  --cream-dim:#A9BCB0;
-  --gold:#D8B45A;
-  --warn:#E0806B;
+  --felt:#133327; --felt2:#1B4234; --line:#2E5C4A;
+  --cream:#EFE9DB; --dim:#A9BCB0; --gold:#D8B45A; --warn:#E0806B; --ok:#8FC79A;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0}
-body{
-  background:var(--felt);
-  color:var(--cream);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-  font-size:16px;line-height:1.5;
-  padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
-  min-height:100vh;
-  overscroll-behavior:none;
-}
-.wrap{max-width:480px;margin:0 auto;padding:16px 18px 32px}
-h1{font-family:Georgia,"Times New Roman",serif;font-size:20px;font-weight:400;margin:4px 0 18px;letter-spacing:.01em}
-.tabs{display:flex;gap:0;border-bottom:1px solid var(--line);margin-bottom:22px}
-.tab{flex:1;background:none;border:0;color:var(--cream-dim);font-size:15px;padding:12px 4px;border-bottom:2px solid transparent;font-family:inherit}
-.tab.on{color:var(--cream);border-bottom-color:var(--gold)}
+body{background:var(--felt);color:var(--cream);
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+ font-size:16px;line-height:1.5;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+ min-height:100vh;overscroll-behavior:none}
+.wrap{max-width:480px;margin:0 auto;padding:14px 18px 40px}
+h1{font-family:Georgia,serif;font-size:19px;font-weight:400;margin:2px 0 4px}
+h2{font-family:Georgia,serif;font-size:18px;font-weight:400;margin:0 0 6px}
 button{font-family:inherit;touch-action:manipulation;cursor:pointer}
-.btn{
-  display:block;width:100%;min-height:56px;
-  background:none;border:1px solid var(--line);border-radius:10px;
-  color:var(--cream);font-size:17px;padding:14px;
-}
-.btn:active{background:var(--felt-2)}
+.btn{display:block;width:100%;min-height:54px;background:none;border:1px solid var(--line);
+ border-radius:10px;color:var(--cream);font-size:17px;padding:12px}
+.btn:active{background:var(--felt2)}
 .btn.solid{background:var(--cream);color:var(--felt);border-color:var(--cream)}
 .btn.solid:active{background:#DDD6C6}
-.btn.quiet{color:var(--cream-dim);font-size:15px;min-height:48px}
+.btn.small{min-height:44px;font-size:15px}
+.btn.quiet{color:var(--dim);font-size:15px;min-height:46px}
+.back{background:none;border:0;color:var(--dim);font-size:15px;padding:6px 0;margin-bottom:10px}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.suits{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
-.suit{display:flex;align-items:center;gap:10px;min-height:52px;padding:0 14px;border:1px solid var(--line);border-radius:10px;font-size:16px;color:var(--cream-dim);background:none}
-.suit.on{color:var(--cream);border-color:var(--cream-dim);background:var(--felt-2)}
-.sym{font-size:20px}
-.sym.r{color:#E08074}
-.meta{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--cream-dim);margin-bottom:14px}
-.stage{display:flex;justify-content:center;margin-bottom:22px;min-height:280px;align-items:center}
-.panel{background:var(--felt-2);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px}
-.lbl{font-size:13px;color:var(--cream-dim);margin-bottom:6px}
-.shown{font-family:Georgia,serif;font-size:22px;margin-bottom:12px;min-height:30px}
-.shown.empty{color:var(--cream-dim);font-size:16px;font-family:inherit}
-input[type=text]{
-  width:100%;min-height:48px;background:var(--felt);border:1px solid var(--line);
-  border-radius:8px;color:var(--cream);font-family:inherit;font-size:16px;padding:10px 12px;
-}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.hint{font-size:14px;color:var(--dim);margin:0 0 14px}
+.crit{font-size:13px;color:var(--gold);margin:0 0 18px}
+.panel{background:var(--felt2);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px}
+.lbl{font-size:13px;color:var(--dim);margin-bottom:6px}
+.stage-btn{display:block;width:100%;text-align:left;background:var(--felt2);border:1px solid var(--line);
+ border-radius:10px;color:var(--cream);padding:13px 14px;margin-bottom:10px;font-size:16px}
+.stage-btn:active{background:#204E3D}
+.stage-btn small{display:block;color:var(--dim);font-size:13px;margin-top:2px}
+.stage-btn .st{float:right;font-size:13px;color:var(--dim);margin-left:10px}
+.stage-btn .st.good{color:var(--ok)}
+input[type=text]{width:100%;min-height:46px;background:var(--felt);border:1px solid var(--line);
+ border-radius:8px;color:var(--cream);font-family:inherit;font-size:16px;padding:9px 12px}
 input[type=text]::placeholder{color:#5E7A6B}
 input[type=text]:focus{outline:none;border-color:var(--gold)}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px}
-.stat{background:var(--felt-2);border-radius:10px;padding:14px}
-.stat b{display:block;font-size:26px;font-weight:400;font-family:Georgia,serif;margin-top:2px}
-.list{margin-bottom:22px}
-.item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:15px}
-.item .c{font-family:Georgia,serif;font-size:17px;min-width:52px}
-.item .v{color:var(--cream-dim);font-size:14px;text-align:right;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.red{color:#E08074}
-.hint{font-size:14px;color:var(--cream-dim);margin:0 0 18px}
-.err{color:var(--warn);font-size:14px;min-height:20px;margin-bottom:8px}
-.lib-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)}
-.lib-row .c{font-family:Georgia,serif;font-size:17px;width:56px;flex:none}
-.lib-row input{min-height:42px}
-.sec{font-size:13px;color:var(--cream-dim);margin:26px 0 8px}
+.pt{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.pt .n{width:58px;flex:none;font-family:Georgia,serif;font-size:15px;color:var(--dim)}
+.pt .n b{color:var(--cream);font-weight:400}
+.meta{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:var(--dim);margin-bottom:14px;min-height:24px}
+.stage{display:flex;justify-content:center;align-items:center;min-height:260px;margin-bottom:18px;text-align:center}
+.bignum{font-family:Georgia,serif;font-size:74px;line-height:1}
+.bigtxt{font-family:Georgia,serif;font-size:27px;line-height:1.3;padding:0 6px}
+.answer{font-family:Georgia,serif;font-size:25px;margin-bottom:14px;text-align:center}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.stat{background:var(--felt2);border-radius:10px;padding:13px}
+.stat b{display:block;font-size:25px;font-weight:400;font-family:Georgia,serif;margin-top:2px}
+.item{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:15px}
+.item .c{font-family:Georgia,serif;min-width:52px;flex:none}
+.item .v{color:var(--dim);font-size:14px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sec{font-size:13px;color:var(--dim);margin:22px 0 8px;border-top:1px solid var(--line);padding-top:14px}
+.verdict{border-radius:10px;padding:13px;margin-bottom:16px;font-size:15px}
+.v-ok{background:#1D4A33;border:1px solid var(--ok)}
+.v-no{background:#4A2A26;border:1px solid var(--warn)}
+.chip{display:inline-block;background:var(--felt2);border:1px solid var(--line);border-radius:20px;
+ padding:8px 14px;font-size:14px;color:var(--dim);margin:0 6px 8px 0}
+.chip.on{color:var(--cream);border-color:var(--cream);background:#204E3D}
 .hide{display:none}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Kartenbilder</h1>
 
-  <div class="tabs">
-    <button class="tab on" data-t="train">Training</button>
-    <button class="tab" data-t="lib">Bilder</button>
+<div id="v-home">
+  <h1>Kartenpalast</h1>
+  <p class="hint">Skat, 32 Karten. Vier Räume à acht Punkte, feste Adressen.</p>
+  <div id="stagelist"></div>
+  <div class="sec">Daten</div>
+  <button class="btn quiet" id="clrprog" style="margin-bottom:9px">Fortschritt zurücksetzen</button>
+  <button class="btn quiet" id="clrall">Palast und alles löschen</button>
+</div>
+
+<div id="v-palace" class="hide">
+  <button class="back" data-home>← Übersicht</button>
+  <h2>Stufe 1 — Rohbau</h2>
+  <p class="hint">Vier Räume, je acht Punkte in Laufrichtung. Geh die Räume dabei wirklich ab. Unbewegliche Gegenstände, Abstand dazwischen, keine Kreuzungen.</p>
+  <p class="crit">Fertig, wenn alle 32 Punkte stehen und du die Liste einmal laut vorgelesen hast.</p>
+  <div id="palacebody"></div>
+  <div class="sec">Abschluss</div>
+  <div class="panel">
+    <div class="lbl">Ausgefüllt</div>
+    <div id="fillcount" style="font-family:Georgia,serif;font-size:22px;margin-bottom:12px"></div>
+    <button class="btn small" id="readaloud">Laut vorgelesen: <span id="ra">nein</span></button>
   </div>
+  <button class="btn quiet" data-home>Zurück</button>
+</div>
 
-  <!-- TRAINING -->
-  <div id="v-train">
-
-    <div id="setup">
-      <p class="hint">Fang mit einer Farbe an. Erst wenn die sitzt, kommt die nächste dazu.</p>
-      <div class="suits" id="suits"></div>
-      <button class="suit" id="weakmode" style="width:100%;margin-bottom:14px">
-        <span class="sym">↻</span><span>Schwache Karten häufiger</span>
-      </button>
-      <div class="err" id="err"></div>
-      <button class="btn solid" id="start">Runde starten</button>
-    </div>
-
-    <div id="round" class="hide">
-      <div class="meta">
-        <span id="prog"></span>
-        <button class="btn quiet" id="abort" style="width:auto;min-height:36px;padding:6px 12px;border:0;">Abbrechen</button>
-      </div>
-      <div class="stage" id="stage"></div>
-
-      <div id="ask">
-        <div class="row">
-          <button class="btn solid" id="hit">Bild da</button>
-          <button class="btn" id="miss">Kein Bild</button>
-        </div>
-      </div>
-
-      <div id="reveal" class="hide">
-        <div class="panel">
-          <div class="lbl">Dein Bild</div>
-          <div class="shown" id="shown"></div>
-          <input type="text" id="imgin" placeholder="Bild eintragen" autocomplete="off" autocapitalize="sentences">
-        </div>
-        <button class="btn solid" id="next">Weiter</button>
-      </div>
-    </div>
-
-    <div id="result" class="hide">
-      <div class="stats">
-        <div class="stat"><span class="lbl">Treffer</span><b id="r1"></b></div>
-        <div class="stat"><span class="lbl">Schnitt</span><b id="r2"></b></div>
-      </div>
-      <div class="list" id="weaklist"></div>
-      <button class="btn solid" id="again">Neue Runde</button>
-    </div>
-
+<div id="v-ex" class="hide">
+  <button class="back" data-home>← Übersicht</button>
+  <div id="ex-intro"></div>
+  <div id="ex-run" class="hide">
+    <div class="meta"><span id="ex-prog"></span><span id="ex-note"></span></div>
+    <div class="stage" id="ex-stage"></div>
+    <div id="ex-ctrl"></div>
   </div>
+  <div id="ex-done" class="hide"></div>
+</div>
 
-  <!-- BIBLIOTHEK -->
-  <div id="v-lib" class="hide">
-    <p class="hint">Hier legst du fest, welches Bild zu welcher Karte gehört. Wird automatisch gespeichert.</p>
-    <div id="libbody"></div>
-    <div class="sec">Zurücksetzen</div>
-    <button class="btn quiet" id="clrstats" style="margin-bottom:10px">Statistik löschen</button>
-    <button class="btn quiet" id="clrimgs">Alle Bilder löschen</button>
-  </div>
 </div>
 
 <script>
 (function(){
 var SUITS=[{s:"\u2665",n:"Herz",r:1},{s:"\u2666",n:"Karo",r:1},{s:"\u2660",n:"Pik",r:0},{s:"\u2663",n:"Kreuz",r:0}];
-var RANKS=["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+var VALS=["7","8","9","B","D","K","10","A"];
+var MARK=["Feuer","Wasser","Schnee"];
 var LAY={
- "2":[[50,17],[50,83]],
- "3":[[50,17],[50,50],[50,83]],
- "4":[[28,17],[72,17],[28,83],[72,83]],
- "5":[[28,17],[72,17],[50,50],[28,83],[72,83]],
- "6":[[28,17],[72,17],[28,50],[72,50],[28,83],[72,83]],
  "7":[[28,17],[72,17],[50,33],[28,50],[72,50],[28,83],[72,83]],
  "8":[[28,17],[72,17],[50,33],[28,50],[72,50],[50,67],[28,83],[72,83]],
  "9":[[28,17],[72,17],[28,39],[72,39],[50,50],[28,61],[72,61],[28,83],[72,83]],
@@ -164,179 +125,395 @@ var LAY={
 };
 var $=function(s){return document.querySelector(s)};
 var $$=function(s){return [].slice.call(document.querySelectorAll(s))};
-var isRed=function(s){return s==="\u2665"||s==="\u2666"};
-
-var imgs=load("kt.images",{});
-var stats=load("kt.stats",{});
-var picked=load("kt.suits",["\u2665"]);
-var weakMode=load("kt.weak",false);
-var deck=[],idx=0,round=[],t0=0;
-
-function load(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function load(k,d){try{var v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}}
 function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-function key(c){return c.s+c.r}
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function esc(s){return (s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;")}
 
-function cardSVG(c){
-  var col=isRed(c.s)?"#B02A20":"#1A1A1A";
-  var o='<svg viewBox="0 0 100 140" width="196" height="274" role="img" aria-label="'+c.r+' '+c.s+'">';
+var P=load("kp.palace",{rooms:[0,1,2,3].map(function(){return {name:"",pts:["","","","","","","",""]}}),read:false});
+var prog=load("kp.prog",{});
+var s3suits=load("kp.s3suits",[0]);
+var timers=[];
+
+function idxOf(r,v){return r*8+v}
+function cardAt(i){var r=Math.floor(i/8);return {s:SUITS[r].s,r:VALS[i%8],red:SUITS[r].r}}
+function ptName(i){var r=Math.floor(i/8),v=i%8;return P.rooms[r].pts[v].trim()||("Punkt "+(i+1))}
+function roomName(r){return P.rooms[r].name.trim()||("Raum "+(r+1))}
+function filled(){var c=0;P.rooms.forEach(function(rm){rm.pts.forEach(function(p){if(p.trim())c++})});return c}
+function cardLabel(i){var c=cardAt(i);return c.s+" "+c.r}
+function stopTimers(){timers.forEach(function(t){clearTimeout(t)});timers=[]}
+
+function cardSVG(c,w){
+  w=w||184;
+  var col=c.red?"#B02A20":"#1A1A1A";
+  var o='<svg viewBox="0 0 100 140" width="'+w+'" height="'+Math.round(w*1.4)+'" role="img" aria-label="'+c.r+' '+c.s+'">';
   o+='<rect x="1" y="1" width="98" height="138" rx="7" fill="#FCFBF7" stroke="#C9C4B6" stroke-width="0.7"/>';
   o+='<g fill="'+col+'" font-family="Georgia,serif" text-anchor="middle">';
   o+='<text x="10" y="17" font-size="13">'+c.r+'</text><text x="10" y="28" font-size="11">'+c.s+'</text>';
   o+='<g transform="rotate(180 50 70)"><text x="10" y="17" font-size="13">'+c.r+'</text><text x="10" y="28" font-size="11">'+c.s+'</text></g>';
-  if(c.r==="A"){
-    o+='<text x="50" y="85" font-size="46">'+c.s+'</text>';
-  }else if(c.r==="J"||c.r==="Q"||c.r==="K"){
+  if(c.r==="A"){o+='<text x="50" y="85" font-size="46">'+c.s+'</text>'}
+  else if(c.r==="B"||c.r==="D"||c.r==="K"){
     o+='<rect x="22" y="24" width="56" height="92" rx="3" fill="none" stroke="'+col+'" stroke-width="0.7"/>';
     o+='<line x1="22" y1="70" x2="78" y2="70" stroke="'+col+'" stroke-width="0.5"/>';
     o+='<text x="50" y="53" font-size="23">'+c.r+'</text><text x="50" y="65" font-size="14">'+c.s+'</text>';
     o+='<g transform="rotate(180 50 70)"><text x="50" y="53" font-size="23">'+c.r+'</text><text x="50" y="65" font-size="14">'+c.s+'</text></g>';
-  }else{
+  } else {
     LAY[c.r].forEach(function(p){
-      var x=p[0],y=p[1]*1.32+7;
-      var rot=p[1]>50?' transform="rotate(180 '+x+' '+(y-4.6)+')"':'';
+      var x=p[0],y=p[1]*1.32+7,rot=p[1]>50?' transform="rotate(180 '+x+' '+(y-4.6)+')"':'';
       o+='<text x="'+x+'" y="'+y+'" font-size="15"'+rot+'>'+c.s+'</text>';
     });
   }
   return o+'</g></svg>';
 }
 
-/* ---- Setup ---- */
-function drawSuits(){
-  $("#suits").innerHTML=SUITS.map(function(x){
-    var on=picked.indexOf(x.s)>-1;
-    return '<button class="suit'+(on?' on':'')+'" data-s="'+x.s+'"><span class="sym'+(x.r?' r':'')+'">'+x.s+'</span><span>'+x.n+'</span></button>';
+/* ---------- Navigation ---------- */
+function view(v){
+  ["home","palace","ex"].forEach(function(x){$("#v-"+x).className=(x===v?"":"hide")});
+  window.scrollTo(0,0);
+}
+function home(){stopTimers();drawHome();view("home")}
+$$("[data-home]").forEach(function(b){b.onclick=home});
+
+var STAGES=[
+ {id:1,t:"Rohbau",d:"Räume und 32 Punkte festlegen"},
+ {id:2,t:"Route automatisieren",d:"Vorwärts, rückwärts, Sprungabfrage"},
+ {id:3,t:"Zuordnung verankern",d:"Karte ↔ Ort, beide Richtungen"},
+ {id:4,t:"Markieren und auslesen",d:"Merken, dann Negativabfrage"},
+ {id:5,t:"Tempo",d:"Sekundentakt, keine Bedenkzeit"},
+ {id:6,t:"Rotation",d:"Zwei Durchgänge, zwei Marker"}
+];
+function drawHome(){
+  $("#stagelist").innerHTML=STAGES.map(function(s){
+    var p=prog["s"+s.id];
+    var st='<span class="st'+(p&&p.ok?" good":"")+'">'+(p?esc(p.txt):"—")+'</span>';
+    return '<button class="stage-btn" data-s="'+s.id+'">'+st+'Stufe '+s.id+' — '+s.t+'<small>'+s.d+'</small></button>';
   }).join("");
-  $$("#suits .suit").forEach(function(b){
-    b.onclick=function(){
-      var s=b.dataset.s,i=picked.indexOf(s);
-      if(i>-1)picked.splice(i,1);else picked.push(s);
-      save("kt.suits",picked);drawSuits();$("#err").textContent="";
-    };
-  });
-  $("#weakmode").className="suit"+(weakMode?" on":"");
+  $$("#stagelist .stage-btn").forEach(function(b){b.onclick=function(){openStage(+b.dataset.s)}});
 }
+function mark(id,ok,txt){prog["s"+id]={ok:ok,txt:txt};save("kp.prog",prog)}
 
-function buildDeck(){
-  var d=[];
-  picked.forEach(function(s){RANKS.forEach(function(r){d.push({s:s,r:r})})});
-  if(weakMode){
-    var extra=[];
-    d.forEach(function(c){
-      var st=stats[key(c)];
-      if(!st||st.miss>st.hit||(st.avg&&st.avg>4))extra.push(c);
-    });
-    d=d.concat(extra);
+function openStage(id){
+  stopTimers();
+  if(id===1){drawPalace();view("palace");return}
+  $("#ex-done").className="hide";$("#ex-run").className="hide";$("#ex-intro").className="";
+  view("ex");
+  if(filled()<32){
+    $("#ex-intro").innerHTML='<div class="verdict v-no">Der Palast ist noch nicht vollständig — '+filled()+' von 32 Punkten.</div>'+
+      '<button class="btn solid" id="gop">Zu Stufe 1</button>';
+    $("#gop").onclick=function(){openStage(1)};
+    return;
   }
-  for(var i=d.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=d[i];d[i]=d[j];d[j]=t}
-  return d;
+  ({2:introS2,3:introS3,4:introS4,5:introS5,6:introS6})[id]();
 }
 
-/* ---- Runde ---- */
-function startRound(){
-  if(!picked.length){$("#err").textContent="Mindestens eine Farbe wählen";return}
-  deck=buildDeck();idx=0;round=[];
-  $("#setup").className="hide";$("#result").className="hide";$("#round").className="";
-  showCard();
-}
-function showCard(){
-  var c=deck[idx];
-  $("#stage").innerHTML=cardSVG(c);
-  $("#prog").textContent=(idx+1)+" von "+deck.length;
-  $("#ask").className="";$("#reveal").className="hide";
-  t0=Date.now();
-}
-function answer(ok){
-  var dt=(Date.now()-t0)/1000, c=deck[idx], k=key(c);
-  round.push({c:c,ok:ok,t:dt});
-  var st=stats[k]||{hit:0,miss:0,avg:0};
-  if(ok){st.avg=st.hit?(st.avg*st.hit+dt)/(st.hit+1):dt;st.hit++}else{st.miss++}
-  stats[k]=st;save("kt.stats",stats);
-  var v=imgs[k];
-  $("#shown").textContent=v||"Noch kein Bild festgelegt";
-  $("#shown").className=v?"shown":"shown empty";
-  $("#imgin").value=v||"";
-  $("#ask").className="hide";$("#reveal").className="";
-}
-function nextCard(){
-  var v=$("#imgin").value.trim(),k=key(deck[idx]);
-  if(v){imgs[k]=v;save("kt.images",imgs)}
-  idx++;
-  if(idx>=deck.length)finish();else showCard();
-}
-function finish(){
-  $("#round").className="hide";$("#result").className="";
-  var hits=round.filter(function(r){return r.ok});
-  $("#r1").textContent=Math.round(hits.length/round.length*100)+"%";
-  var avg=hits.length?hits.reduce(function(a,r){return a+r.t},0)/hits.length:0;
-  $("#r2").textContent=hits.length?avg.toFixed(1)+"s":"\u2014";
-  var weak=round.filter(function(r){return !r.ok||r.t>4})
-    .sort(function(a,b){return (a.ok?1:0)-(b.ok?1:0)||b.t-a.t}).slice(0,10);
-  if(!weak.length){
-    $("#weaklist").innerHTML='<p class="hint">Alles unter vier Sekunden. Nimm eine Farbe dazu.</p>';
-  }else{
-    $("#weaklist").innerHTML='<div class="lbl" style="margin-bottom:6px">Wackelkandidaten</div>'+
-      weak.map(function(r){
-        return '<div class="item"><span class="c'+(isRed(r.c.s)?" red":"")+'">'+r.c.s+' '+r.c.r+'</span>'+
-          '<span class="v">'+(imgs[key(r.c)]||"kein Bild")+'</span>'+
-          '<span class="v" style="flex:none">'+(r.ok?r.t.toFixed(1)+"s":"\u2716")+'</span></div>';
-      }).join("");
-  }
-}
-function toSetup(){
-  $("#round").className="hide";$("#result").className="hide";$("#setup").className="";
-}
-
-/* ---- Bibliothek ---- */
-function drawLib(){
+/* ---------- Stufe 1 ---------- */
+function drawPalace(){
   var h="";
-  SUITS.forEach(function(x){
-    h+='<div class="sec">'+x.n+'</div>';
-    RANKS.forEach(function(r){
-      var k=x.s+r;
-      h+='<div class="lib-row"><span class="c'+(x.r?" red":"")+'">'+x.s+' '+r+'</span>'+
-         '<input type="text" data-k="'+k+'" value="'+(imgs[k]||"").replace(/"/g,"&quot;")+'" placeholder="Bild" autocomplete="off"></div>';
+  SUITS.forEach(function(su,r){
+    h+='<div class="sec" style="color:'+(su.r?"#E08074":"var(--cream)")+'">'+su.s+' '+su.n+' — Raum '+(r+1)+'</div>';
+    h+='<div class="pt"><span class="n">Raum</span><input type="text" data-r="'+r+'" data-v="-1" value="'+esc(P.rooms[r].name)+'" placeholder="z. B. Flur Elternhaus"></div>';
+    VALS.forEach(function(v,vi){
+      h+='<div class="pt"><span class="n"><b>'+(idxOf(r,vi)+1)+'.</b> '+v+'</span>'+
+         '<input type="text" data-r="'+r+'" data-v="'+vi+'" value="'+esc(P.rooms[r].pts[vi])+'" placeholder="Gegenstand"></div>';
     });
   });
-  $("#libbody").innerHTML=h;
-  $$("#libbody input").forEach(function(el){
-    el.addEventListener("change",function(){
-      var v=el.value.trim();
-      if(v)imgs[el.dataset.k]=v;else delete imgs[el.dataset.k];
-      save("kt.images",imgs);
+  $("#palacebody").innerHTML=h;
+  $$("#palacebody input").forEach(function(el){
+    el.addEventListener("input",function(){
+      var r=+el.dataset.r,v=+el.dataset.v;
+      if(v<0)P.rooms[r].name=el.value;else P.rooms[r].pts[v]=el.value;
+      save("kp.palace",P);updFill();
     });
+  });
+  updFill();
+  $("#readaloud").onclick=function(){P.read=!P.read;save("kp.palace",P);updFill()};
+}
+function updFill(){
+  var f=filled(),ok=(f===32&&P.read);
+  $("#fillcount").textContent=f+" von 32 Punkten";
+  $("#ra").textContent=P.read?"ja":"nein";
+  mark(1,ok,ok?"fertig":f+"/32");
+}
+
+/* ---------- Abfrage-Engine ---------- */
+function runQuiz(cfg){
+  var i=0,res=[],t0=0;
+  $("#ex-intro").className="hide";$("#ex-done").className="hide";$("#ex-run").className="";
+  $("#ex-note").textContent=cfg.note||"";
+  step();
+  function step(){
+    $("#ex-prog").textContent=(i+1)+" von "+cfg.items.length;
+    $("#ex-stage").innerHTML=cfg.prompt(cfg.items[i]);
+    $("#ex-ctrl").innerHTML='<button class="btn solid" id="rev">Auflösen</button>';
+    t0=Date.now();
+    $("#rev").onclick=reveal;
+  }
+  function reveal(){
+    var dt=(Date.now()-t0)/1000;
+    $("#ex-ctrl").innerHTML='<div class="answer">'+cfg.answer(cfg.items[i])+'</div>'+
+      '<div class="row"><button class="btn solid" id="ok">Richtig</button><button class="btn" id="no">Daneben</button></div>'+
+      '<div class="lbl" style="text-align:center;margin-top:10px">'+dt.toFixed(1)+' s</div>';
+    $("#ok").onclick=function(){next(true,dt)};
+    $("#no").onclick=function(){next(false,dt)};
+  }
+  function next(ok,dt){
+    res.push({it:cfg.items[i],ok:ok,t:dt});i++;
+    if(i>=cfg.items.length){$("#ex-run").className="hide";$("#ex-done").className="";cfg.onDone(res)}
+    else step();
+  }
+}
+function summary(res,critFn,critText,labelFn){
+  var ok=res.filter(function(r){return r.ok});
+  var avg=ok.length?ok.reduce(function(a,r){return a+r.t},0)/ok.length:0;
+  var pass=critFn(res,ok,avg);
+  var h='<div class="verdict '+(pass?"v-ok":"v-no")+'">'+(pass?"Kriterium erfüllt. ":"Noch nicht. ")+critText+'</div>';
+  h+='<div class="stats"><div class="stat"><span class="lbl">Richtig</span><b>'+ok.length+'/'+res.length+'</b></div>'+
+     '<div class="stat"><span class="lbl">Schnitt</span><b>'+(ok.length?avg.toFixed(1)+"s":"—")+'</b></div></div>';
+  var weak=res.filter(function(r){return !r.ok||r.t>3}).sort(function(a,b){return (a.ok?1:0)-(b.ok?1:0)||b.t-a.t}).slice(0,12);
+  if(weak.length){
+    h+='<div class="lbl">Wackelkandidaten</div>';
+    weak.forEach(function(r){
+      h+='<div class="item"><span class="c">'+labelFn(r.it)+'</span><span class="v">'+(r.ok?r.t.toFixed(1)+"s":"daneben")+'</span></div>';
+    });
+  }
+  return {html:h,pass:pass,avg:avg,ok:ok.length};
+}
+function doneScreen(html,againFn){
+  $("#ex-done").innerHTML=html+'<button class="btn solid" id="ag" style="margin:18px 0 9px">Nochmal</button>'+
+    '<button class="btn quiet" id="hm">Übersicht</button>';
+  $("#ag").onclick=againFn;
+  $("#hm").onclick=home;
+}
+
+/* ---------- Stufe 2 ---------- */
+function introS2(){
+  $("#ex-intro").innerHTML='<h2>Stufe 2 — Route automatisieren</h2>'+
+   '<p class="hint">Noch ohne Karten. In dieser Reihenfolge: erst vorwärts, dann rückwärts, dann Sprungabfrage. Sag den Punkt laut, bevor du auflöst.</p>'+
+   '<p class="crit">Fertig, wenn die Sprungabfrage 10 von 10 trifft, jede unter 2 Sekunden.</p>'+
+   '<button class="btn" id="a" style="margin-bottom:9px">Vorwärts 1 → 32</button>'+
+   '<button class="btn" id="b" style="margin-bottom:9px">Rückwärts 32 → 1</button>'+
+   '<button class="btn solid" id="c">Sprungabfrage (10 zufällige)</button>';
+  $("#a").onclick=function(){s2run("fwd")};
+  $("#b").onclick=function(){s2run("rev")};
+  $("#c").onclick=function(){s2run("rnd")};
+}
+function s2run(mode){
+  var items=[];for(var i=0;i<32;i++)items.push(i);
+  if(mode==="rev")items.reverse();
+  if(mode==="rnd")items=shuffle(items).slice(0,10);
+  runQuiz({
+    note:mode==="rnd"?"Sprungabfrage":(mode==="rev"?"rückwärts":"vorwärts"),
+    items:items,
+    prompt:function(i){return '<div><div class="bignum">'+(i+1)+'</div><div class="lbl" style="margin-top:12px">Welcher Punkt?</div></div>'},
+    answer:function(i){return ptName(i)+'<div class="lbl" style="margin-top:6px">'+roomName(Math.floor(i/8))+'</div>'},
+    onDone:function(res){
+      var s=summary(res,function(r,ok){
+        return mode==="rnd" ? (ok.length===r.length&&r.every(function(x){return x.t<2})) : ok.length===r.length;
+      },mode==="rnd"?"Ziel: 10 von 10, jede unter 2 Sekunden.":"Ziel: alle richtig.",
+      function(i){return (i+1)+"."});
+      if(mode==="rnd")mark(2,s.pass,s.ok+"/10");
+      doneScreen(s.html,function(){s2run(mode)});
+    }
   });
 }
 
-/* ---- Wiring ---- */
-$$(".tab").forEach(function(b){
-  b.onclick=function(){
-    $$(".tab").forEach(function(x){x.className="tab"});
-    b.className="tab on";
-    var lib=b.dataset.t==="lib";
-    $("#v-train").className=lib?"hide":"";
-    $("#v-lib").className=lib?"":"hide";
-    if(lib)drawLib();
-  };
-});
-$("#weakmode").onclick=function(){weakMode=!weakMode;save("kt.weak",weakMode);drawSuits()};
-$("#start").onclick=startRound;
-$("#hit").onclick=function(){answer(true)};
-$("#miss").onclick=function(){answer(false)};
-$("#next").onclick=nextCard;
-$("#abort").onclick=toSetup;
-$("#again").onclick=toSetup;
-$("#imgin").addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();$("#imgin").blur();nextCard()}});
-$("#clrstats").onclick=function(){if(confirm("Alle Zeiten und Trefferquoten löschen?")){stats={};save("kt.stats",stats)}};
-$("#clrimgs").onclick=function(){if(confirm("Alle hinterlegten Bilder löschen?")){imgs={};save("kt.images",imgs);drawLib()}};
+/* ---------- Stufe 3 ---------- */
+function introS3(){
+  $("#ex-intro").innerHTML='<h2>Stufe 3 — Zuordnung verankern</h2>'+
+   '<p class="hint">Karte → Ort ist die Richtung, die du im Spiel brauchst. Fang mit einer Farbe an, dann Farbe für Farbe dazu.</p>'+
+   '<p class="crit">Fertig, wenn das ganze Blatt läuft: Karte → Ort im Schnitt unter 2 Sekunden, keine Verwechslung.</p>'+
+   '<div class="lbl">Farben</div><div id="s3c" style="margin-bottom:18px"></div>'+
+   '<button class="btn solid" id="a" style="margin-bottom:9px">Karte → Ort</button>'+
+   '<button class="btn" id="b">Ort → Karte</button>';
+  drawChips();
+  $("#a").onclick=function(){s3run("c2p")};
+  $("#b").onclick=function(){s3run("p2c")};
+  function drawChips(){
+    $("#s3c").innerHTML=SUITS.map(function(su,i){
+      return '<button class="chip'+(s3suits.indexOf(i)>-1?" on":"")+'" data-i="'+i+'">'+su.s+' '+su.n+'</button>';
+    }).join("");
+    $$("#s3c .chip").forEach(function(b){
+      b.onclick=function(){
+        var i=+b.dataset.i,k=s3suits.indexOf(i);
+        if(k>-1)s3suits.splice(k,1);else s3suits.push(i);
+        if(!s3suits.length)s3suits=[i];
+        save("kp.s3suits",s3suits);drawChips();
+      };
+    });
+  }
+}
+function s3run(dir){
+  var items=[];
+  s3suits.slice().sort().forEach(function(r){for(var v=0;v<8;v++)items.push(idxOf(r,v))});
+  shuffle(items);
+  runQuiz({
+    note:dir==="c2p"?"Karte → Ort":"Ort → Karte",
+    items:items,
+    prompt:function(i){
+      return dir==="c2p" ? cardSVG(cardAt(i))
+        : '<div><div class="bigtxt">'+esc(ptName(i))+'</div><div class="lbl" style="margin-top:10px">'+esc(roomName(Math.floor(i/8)))+'</div></div>';
+    },
+    answer:function(i){
+      return dir==="c2p" ? esc(ptName(i))+'<div class="lbl" style="margin-top:6px">'+esc(roomName(Math.floor(i/8)))+'</div>' : cardLabel(i);
+    },
+    onDone:function(res){
+      var s=summary(res,function(r,ok,avg){return ok.length===r.length&&avg<2},
+        "Ziel: alle richtig, Schnitt unter 2 Sekunden.",cardLabel);
+      if(dir==="c2p"&&s3suits.length===4)mark(3,s.pass,s.avg?s.avg.toFixed(1)+"s":"—");
+      doneScreen(s.html,function(){s3run(dir)});
+    }
+  });
+}
 
-drawSuits();
+/* ---------- Stufen 4–6 ---------- */
+function introS4(){
+  $("#ex-intro").innerHTML='<h2>Stufe 4 — Markieren und auslesen</h2>'+
+   '<p class="hint">Karten einzeln ansehen und am zugehörigen Ort gedanklich markieren — immer derselbe Marker: '+MARK[0]+'. Danach die Negativabfrage.</p>'+
+   '<p class="crit">Fertig, wenn 16 Karten sitzen: 20 Abfragen richtig, keine Falschmeldung.</p>'+
+   '<div class="lbl">Wie viele Karten</div>'+
+   '<div class="row3"><button class="btn small" data-n="5">5</button><button class="btn small" data-n="10">10</button><button class="btn small" data-n="16">16</button></div>';
+  $$("#ex-intro [data-n]").forEach(function(b){
+    b.onclick=function(){memRun({n:+b.dataset.n,pace:0,stage:4,runs:1})};
+  });
+}
+function introS5(){
+  $("#ex-intro").innerHTML='<h2>Stufe 5 — Tempo</h2>'+
+   '<p class="hint">Die Karten laufen von selbst weiter. Kein Zurück, keine Bedenkzeit.</p>'+
+   '<p class="crit">Fertig, wenn 16 Karten im Sekundentakt sitzen: 20 Abfragen richtig, keine Falschmeldung.</p>'+
+   '<div class="lbl">Takt</div>'+
+   '<div class="row3"><button class="btn small" data-p="1500">1,5 s</button><button class="btn small" data-p="1000">1,0 s</button><button class="btn small" data-p="800">0,8 s</button></div>';
+  $$("#ex-intro [data-p]").forEach(function(b){
+    b.onclick=function(){memRun({n:16,pace:+b.dataset.p,stage:5,runs:1})};
+  });
+}
+function introS6(){
+  $("#ex-intro").innerHTML='<h2>Stufe 6 — Rotation</h2>'+
+   '<p class="hint">Zwei Durchgänge hintereinander mit verschiedenen Markern. Abgefragt wird nur der zweite. Karten aus Durchgang 1, die du fälschlich meldest, sind Überlagerung.</p>'+
+   '<p class="crit">Fertig, wenn keine Falschmeldung aus Durchgang 1 kommt.</p>'+
+   '<div class="panel"><div class="lbl">Durchgang 1</div><div style="font-family:Georgia,serif;font-size:20px;margin-bottom:12px">'+MARK[0]+'</div>'+
+   '<div class="lbl">Durchgang 2</div><div style="font-family:Georgia,serif;font-size:20px">'+MARK[1]+'</div></div>'+
+   '<button class="btn solid" id="go">Starten — 2 × 10 Karten</button>';
+  $("#go").onclick=function(){memRun({n:10,pace:0,stage:6,runs:2})};
+}
 
-var mf={name:"Kartenbilder",short_name:"Kartenbilder",display:"standalone",background_color:"#133327",theme_color:"#133327",start_url:".",
- icons:[{src:"data:image/svg+xml,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" fill="#133327"/><rect x="46" y="30" width="100" height="132" rx="12" fill="#FCFBF7"/><text x="96" y="120" font-size="72" font-family="Georgia,serif" text-anchor="middle" fill="#B02A20">&#9829;</text></svg>'),sizes:"192x192",type:"image/svg+xml"}]};
-var l=document.createElement("link");
-l.rel="manifest";
-l.href=URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:"application/json"}));
-document.head.appendChild(l);
+function memRun(cfg){
+  var all=[];for(var i=0;i<32;i++)all.push(i);
+  var run1=shuffle(all.slice()).slice(0,cfg.n);
+  var run2=cfg.runs===2?shuffle(all.slice()).slice(0,cfg.n):null;
+  var cur=1,list=run1,k=0;
+  $("#ex-intro").className="hide";$("#ex-done").className="hide";$("#ex-run").className="";
+  showCard();
+
+  function showCard(){
+    stopTimers();
+    $("#ex-prog").textContent=(k+1)+" von "+list.length+(cfg.runs===2?"  ·  Durchgang "+cur:"");
+    $("#ex-note").textContent=cur===1?MARK[0]:MARK[1];
+    $("#ex-stage").innerHTML=cardSVG(cardAt(list[k]));
+    if(cfg.pace){
+      $("#ex-ctrl").innerHTML='<div class="lbl" style="text-align:center;padding:16px 0">läuft automatisch</div>';
+      timers.push(setTimeout(adv,cfg.pace));
+    } else {
+      $("#ex-ctrl").innerHTML='<button class="btn solid" id="mk">Markiert</button>';
+      $("#mk").onclick=adv;
+    }
+  }
+  function adv(){
+    k++;
+    if(k<list.length){showCard();return}
+    if(cfg.runs===2&&cur===1){
+      stopTimers();cur=2;list=run2;k=0;
+      $("#ex-prog").textContent="";$("#ex-note").textContent="";
+      $("#ex-stage").innerHTML='<div><div class="bigtxt">Durchgang 2</div><div class="lbl" style="margin-top:12px">Neuer Marker: '+MARK[1]+'</div></div>';
+      $("#ex-ctrl").innerHTML='<button class="btn solid" id="go2">Weiter</button>';
+      $("#go2").onclick=showCard;
+      return;
+    }
+    askPhase();
+  }
+
+  function askPhase(){
+    stopTimers();
+    var played=cfg.runs===2?run2:run1;
+    var pool=[];
+    var pl=shuffle(played.slice()).slice(0,Math.min(10,played.length));
+    var un=shuffle(all.filter(function(x){return played.indexOf(x)<0})).slice(0,20-pl.length);
+    pl.forEach(function(x){pool.push({i:x,was:true})});
+    un.forEach(function(x){pool.push({i:x,was:false})});
+    shuffle(pool);
+    var q=0,ans=[];
+    step();
+    function step(){
+      var it=pool[q];
+      $("#ex-prog").textContent="Abfrage "+(q+1)+" von "+pool.length;
+      $("#ex-note").textContent=cfg.runs===2?MARK[1]:"";
+      $("#ex-stage").innerHTML=cardSVG(cardAt(it.i),158);
+      $("#ex-ctrl").innerHTML='<div class="lbl" style="text-align:center;margin-bottom:10px">Schon gespielt?</div>'+
+        '<div class="row"><button class="btn solid" id="y">Ja</button><button class="btn" id="n">Nein</button></div>';
+      $("#y").onclick=function(){pick(true)};
+      $("#n").onclick=function(){pick(false)};
+    }
+    function pick(said){
+      var it=pool[q];
+      ans.push({i:it.i,was:it.was,said:said,leak:(!it.was&&said&&cfg.runs===2&&run1.indexOf(it.i)>-1)});
+      q++;
+      if(q<pool.length)step();else finish(ans);
+    }
+  }
+
+  function finish(ans){
+    stopTimers();
+    $("#ex-run").className="hide";$("#ex-done").className="";
+    var right=ans.filter(function(a){return a.was===a.said});
+    var fp=ans.filter(function(a){return !a.was&&a.said});
+    var fn=ans.filter(function(a){return a.was&&!a.said});
+    var leak=fp.filter(function(a){return a.leak});
+    var pass=cfg.stage===6 ? leak.length===0 : (fp.length===0&&right.length===ans.length);
+    var crit=cfg.stage===6?"Ziel: keine Falschmeldung aus Durchgang 1."
+      :"Ziel: alles richtig, vor allem keine Falschmeldung.";
+    var h='<div class="verdict '+(pass?"v-ok":"v-no")+'">'+(pass?"Kriterium erfüllt. ":"Noch nicht. ")+crit+'</div>';
+    h+='<div class="stats"><div class="stat"><span class="lbl">Richtig</span><b>'+right.length+'/'+ans.length+'</b></div>'+
+       '<div class="stat"><span class="lbl">Falschmeldungen</span><b style="color:'+(fp.length?"var(--warn)":"var(--ok)")+'">'+fp.length+'</b></div></div>';
+    if(cfg.stage===6){
+      h+='<div class="panel"><div class="lbl">Davon aus Durchgang 1 — Überlagerung</div>'+
+         '<div style="font-family:Georgia,serif;font-size:25px;color:'+(leak.length?"var(--warn)":"var(--ok)")+'">'+leak.length+'</div></div>';
+    }
+    if(fp.length){
+      h+='<div class="lbl" style="margin-top:16px">Fälschlich als gespielt gemeldet</div>';
+      fp.forEach(function(a){
+        h+='<div class="item"><span class="c">'+cardLabel(a.i)+'</span><span class="v">'+esc(ptName(a.i))+(a.leak?" · Durchgang 1":"")+'</span></div>';
+      });
+    }
+    if(fn.length){
+      h+='<div class="lbl" style="margin-top:16px">Übersehen</div>';
+      fn.forEach(function(a){
+        h+='<div class="item"><span class="c">'+cardLabel(a.i)+'</span><span class="v">'+esc(ptName(a.i))+'</span></div>';
+      });
+    }
+    mark(cfg.stage,pass,right.length+"/"+ans.length);
+    doneScreen(h,function(){openStage(cfg.stage)});
+  }
+}
+
+/* ---------- Reset ---------- */
+$("#clrprog").onclick=function(){
+  if(confirm("Fortschritt aller Stufen löschen? Der Palast bleibt erhalten.")){prog={};save("kp.prog",prog);drawHome()}
+};
+$("#clrall").onclick=function(){
+  if(confirm("Palast, Punkte und Fortschritt unwiderruflich löschen?")){
+    ["kp.palace","kp.prog","kp.s3suits"].forEach(function(k){localStorage.removeItem(k)});
+    location.reload();
+  }
+};
+
+/* ---------- Manifest ---------- */
+var mf={name:"Kartenpalast",short_name:"Kartenpalast",display:"standalone",background_color:"#133327",
+ theme_color:"#133327",start_url:".",icons:[{src:"data:image/svg+xml,"+encodeURIComponent(
+ '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" fill="#133327"/><rect x="46" y="30" width="100" height="132" rx="12" fill="#FCFBF7"/><text x="96" y="122" font-size="72" font-family="Georgia,serif" text-anchor="middle" fill="#B02A20">&#9829;</text></svg>'),
+ sizes:"192x192",type:"image/svg+xml"}]};
+var l=document.createElement("link");l.rel="manifest";
+try{l.href=URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:"application/json"}));document.head.appendChild(l)}catch(e){}
+
+drawHome();
 })();
 </script>
 </body>
