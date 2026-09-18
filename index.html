@@ -44,10 +44,13 @@ button{font-family:inherit;touch-action:manipulation;cursor:pointer}
 .stage-btn small{display:block;color:var(--dim);font-size:13px;margin-top:2px}
 .stage-btn .st{float:right;font-size:13px;color:var(--dim);margin-left:10px}
 .stage-btn .st.good{color:var(--ok)}
-input[type=text]{width:100%;min-height:46px;background:var(--felt);border:1px solid var(--line);
+input[type=text],input[type=password]{width:100%;min-height:46px;background:var(--felt);border:1px solid var(--line);
  border-radius:8px;color:var(--cream);font-family:inherit;font-size:16px;padding:9px 12px}
-input[type=text]::placeholder{color:#5E7A6B}
-input[type=text]:focus{outline:none;border-color:var(--gold)}
+input::placeholder{color:#5E7A6B}
+input:focus{outline:none;border-color:var(--gold)}
+a{color:var(--gold)}
+.field{margin-bottom:11px}
+.field .lbl{margin-bottom:4px}
 .pt{display:flex;align-items:center;gap:9px;margin-bottom:7px}
 .pt .n{width:58px;flex:none;font-family:Georgia,serif;font-size:15px;color:var(--dim)}
 .pt .n b{color:var(--cream);font-weight:400}
@@ -69,6 +72,10 @@ input[type=text]:focus{outline:none;border-color:var(--gold)}
 .chip{display:inline-block;background:var(--felt2);border:1px solid var(--line);border-radius:20px;
  padding:8px 14px;font-size:14px;color:var(--dim);margin:0 6px 8px 0}
 .chip.on{color:var(--cream);border-color:var(--cream);background:#204E3D}
+.banner{background:var(--felt2);border:1px solid var(--gold);border-radius:10px;padding:13px;margin-bottom:14px;font-size:14px}
+.note{font-size:13px;color:var(--dim);border-top:1px solid var(--line);margin-top:24px;padding-top:13px}
+.lnk{background:none;border:0;color:var(--gold);font:inherit;padding:0;text-decoration:underline}
+.syncst{font-size:13px;color:var(--dim);margin:-4px 0 10px}
 .hide{display:none}
 </style>
 </head>
@@ -78,8 +85,11 @@ input[type=text]:focus{outline:none;border-color:var(--gold)}
 <div id="v-home">
   <h1>Kartenpalast</h1>
   <p class="hint">Skat, 32 Karten. Vier Räume à acht Punkte, feste Adressen.</p>
+  <div id="syncbanner"></div>
   <div id="stagelist"></div>
   <div class="sec">Daten</div>
+  <div class="syncst">GitHub: <span id="syncstate">—</span></div>
+  <button class="btn quiet" id="tosync" style="margin-bottom:9px">GitHub-Sync einrichten</button>
   <button class="btn quiet" id="clrprog" style="margin-bottom:9px">Fortschritt zurücksetzen</button>
   <button class="btn quiet" id="clrall">Palast und alles löschen</button>
 </div>
@@ -97,6 +107,30 @@ input[type=text]:focus{outline:none;border-color:var(--gold)}
     <button class="btn small" id="readaloud">Laut vorgelesen: <span id="ra">nein</span></button>
   </div>
   <button class="btn quiet" data-home>Zurück</button>
+</div>
+
+<div id="v-sync" class="hide">
+  <button class="back" data-home>← Übersicht</button>
+  <h2>GitHub-Sync</h2>
+  <p class="hint">Palast, Fortschritt und Farbfilter liegen als JSON-Datei im Repo. Neues Gerät: Seite öffnen, Daten sind da. Zum <em>Speichern</em> braucht jedes Gerät einmalig einen Token — zum <em>Laden</em> aus einem öffentlichen Repo nicht.</p>
+  <div class="panel" id="sync-state"></div>
+  <div class="panel">
+    <div class="field"><div class="lbl">Owner</div><input type="text" id="gh-owner" placeholder="GitHub-Benutzername" autocapitalize="off" spellcheck="false"></div>
+    <div class="field"><div class="lbl">Repository</div><input type="text" id="gh-repo" placeholder="kartentrainer" autocapitalize="off" spellcheck="false"></div>
+    <div class="field"><div class="lbl">Branch</div><input type="text" id="gh-branch" placeholder="main" autocapitalize="off" spellcheck="false"></div>
+    <div class="field" style="margin-bottom:0"><div class="lbl">Datei</div><input type="text" id="gh-path" placeholder="kartenpalast.json" autocapitalize="off" spellcheck="false"></div>
+  </div>
+  <div class="panel">
+    <div class="field" style="margin-bottom:8px"><div class="lbl">Token — nur zum Speichern</div>
+      <input type="password" id="gh-token" placeholder="github_pat_…" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+    <p class="hint" style="margin:0">Fine-grained Token, <b>nur dieses Repo</b>, Berechtigung <b>Contents: Read and write</b>. Er bleibt in diesem Browser und wird nie in die JSON-Datei geschrieben.</p>
+    <p class="hint" style="margin:8px 0 0"><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Token anlegen →</a></p>
+  </div>
+  <button class="btn solid" id="gh-push" style="margin-bottom:9px">Jetzt zu GitHub speichern</button>
+  <button class="btn" id="gh-pull" style="margin-bottom:9px">Von GitHub laden</button>
+  <button class="btn quiet" id="gh-auto" style="margin-bottom:9px">Automatisch speichern: <span id="gh-autost"></span></button>
+  <button class="btn quiet" id="gh-forget">Token auf diesem Gerät löschen</button>
+  <p class="note">Ist das Repo öffentlich, kann jeder die Datei lesen — auch deine Orte. Wenn dir das zu privat ist: ein zweites, privates Repo anlegen und hier eintragen. Mit Token liest die App auch daraus.</p>
 </div>
 
 <div id="v-ex" class="hide">
@@ -133,6 +167,13 @@ function esc(s){return (s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").repl
 var P=load("kp.palace",{rooms:[0,1,2,3].map(function(){return {name:"",pts:["","","","","","","",""]}}),read:false});
 var prog=load("kp.prog",{});
 var s3suits=load("kp.s3suits",[0]);
+var META=load("kp.meta",{updated:0,remote:0});
+var GH=(function(){
+  var d=ghDefaults(),g=load("kp.gh",null);
+  if(!g||typeof g!=="object"){save("kp.gh",d);return d}
+  for(var k in d)if(!(k in g))g[k]=d[k];
+  return g;
+})();
 var timers=[];
 
 function idxOf(r,v){return r*8+v}
@@ -168,7 +209,7 @@ function cardSVG(c,w){
 
 /* ---------- Navigation ---------- */
 function view(v){
-  ["home","palace","ex"].forEach(function(x){$("#v-"+x).className=(x===v?"":"hide")});
+  ["home","palace","ex","sync"].forEach(function(x){$("#v-"+x).className=(x===v?"":"hide")});
   window.scrollTo(0,0);
 }
 function home(){stopTimers();drawHome();view("home")}
@@ -189,21 +230,32 @@ function drawHome(){
     return '<button class="stage-btn" data-s="'+s.id+'">'+st+'Stufe '+s.id+' — '+s.t+'<small>'+s.d+'</small></button>';
   }).join("");
   $$("#stagelist .stage-btn").forEach(function(b){b.onclick=function(){openStage(+b.dataset.s)}});
+  paintBanner();paintHomeSync();
 }
-function mark(id,ok,txt){prog["s"+id]={ok:ok,txt:txt};save("kp.prog",prog)}
+function mark(id,ok,txt){
+  var old=prog["s"+id];
+  if(old&&old.ok===ok&&old.txt===txt)return;
+  prog["s"+id]={ok:ok,txt:txt};save("kp.prog",prog);dirty();
+}
 
 function openStage(id){
   stopTimers();
   if(id===1){drawPalace();view("palace");return}
   $("#ex-done").className="hide";$("#ex-run").className="hide";$("#ex-intro").className="";
   view("ex");
-  if(filled()<32){
-    $("#ex-intro").innerHTML='<div class="verdict v-no">Der Palast ist noch nicht vollständig — '+filled()+' von 32 Punkten.</div>'+
-      '<button class="btn solid" id="gop">Zu Stufe 1</button>';
-    $("#gop").onclick=function(){openStage(1)};
-    return;
-  }
   ({2:introS2,3:introS3,4:introS4,5:introS5,6:introS6})[id]();
+  addGapNote();
+}
+
+function addGapNote(){
+  var f=filled();
+  if(f===32)return;
+  var d=document.createElement("div");
+  d.className="note";
+  d.innerHTML='Der Palast ist erst zu '+f+' von 32 Punkten ausgefüllt. Üben geht trotzdem — leere Plätze heißen hier „Punkt 1“ bis „Punkt 32“. '+
+    '<button class="lnk" id="gap1">Zu Stufe 1</button>';
+  $("#ex-intro").appendChild(d);
+  $("#gap1").onclick=function(){openStage(1)};
 }
 
 /* ---------- Stufe 1 ---------- */
@@ -222,11 +274,11 @@ function drawPalace(){
     el.addEventListener("input",function(){
       var r=+el.dataset.r,v=+el.dataset.v;
       if(v<0)P.rooms[r].name=el.value;else P.rooms[r].pts[v]=el.value;
-      save("kp.palace",P);updFill();
+      save("kp.palace",P);updFill();dirty();
     });
   });
   updFill();
-  $("#readaloud").onclick=function(){P.read=!P.read;save("kp.palace",P);updFill()};
+  $("#readaloud").onclick=function(){P.read=!P.read;save("kp.palace",P);updFill();dirty()};
 }
 function updFill(){
   var f=filled(),ok=(f===32&&P.read);
@@ -337,7 +389,7 @@ function introS3(){
         var i=+b.dataset.i,k=s3suits.indexOf(i);
         if(k>-1)s3suits.splice(k,1);else s3suits.push(i);
         if(!s3suits.length)s3suits=[i];
-        save("kp.s3suits",s3suits);drawChips();
+        save("kp.s3suits",s3suits);dirty();drawChips();
       };
     });
   }
@@ -494,13 +546,263 @@ function memRun(cfg){
   }
 }
 
+/* ---------- GitHub-Sync ---------- */
+function ghDefaults(){
+  var g={owner:"",repo:"",branch:"main",path:"kartenpalast.json",token:"",auto:true,sha:"",synced:0};
+  var m=location.hostname.match(/^([^.]+)\.github\.io$/i);
+  if(m){
+    g.owner=m[1];
+    var seg=location.pathname.split("/").filter(function(x){return x&&!/\.html?$/i.test(x)});
+    g.repo=seg.length?seg[0]:m[1]+".github.io";
+  }
+  return g;
+}
+var ghTimer=null,ghBusy=false,ghAgain=false,ghForce=false,ghMsg="",ghBad=false,ghNew=null;
+
+function ghSave(){save("kp.gh",GH)}
+function ghOn(){return !!(GH.owner&&GH.repo)}
+function ghCanWrite(){return ghOn()&&!!GH.token}
+function ghBranch(){return (GH.branch||"main").trim()}
+function ghPath(){return (GH.path||"kartenpalast.json").trim()}
+function ghNote(m,bad){ghMsg=m||"";ghBad=!!bad;paintSync()}
+function ghApi(){
+  return "https://api.github.com/repos/"+encodeURIComponent(GH.owner.trim())+"/"+encodeURIComponent(GH.repo.trim())+
+    "/contents/"+ghPath().split("/").filter(Boolean).map(encodeURIComponent).join("/");
+}
+function ghHead(){
+  var h={"Accept":"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28"};
+  if(GH.token)h.Authorization="Bearer "+GH.token.trim();
+  return h;
+}
+function ghErr(r,j){
+  if(r.status===401)return "Token ung\u00fcltig oder abgelaufen.";
+  if(r.status===403)return "Kein Zugriff \u2014 der Token braucht Contents: Read and write f\u00fcr dieses Repo.";
+  if(r.status===404)return "Nicht gefunden \u2014 Owner, Repo, Branch oder Dateiname pr\u00fcfen.";
+  if(r.status===409||r.status===422)return "Konflikt mit der Version auf GitHub.";
+  return "GitHub meldet "+r.status+((j&&j.message)?" \u2014 "+j.message:"");
+}
+function b64enc(str){
+  var b=new TextEncoder().encode(str),o="";
+  for(var i=0;i<b.length;i+=4096)o+=String.fromCharCode.apply(null,b.subarray(i,i+4096));
+  return btoa(o);
+}
+function b64dec(str){
+  var bin=atob(String(str).replace(/\s/g,"")),b=new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++)b[i]=bin.charCodeAt(i);
+  return new TextDecoder().decode(b);
+}
+function relTime(ts){
+  if(!ts)return "\u2014";
+  var d=(Date.now()-ts)/1000;
+  if(d<90)return "gerade eben";
+  if(d<3600)return "vor "+Math.round(d/60)+" Min";
+  if(d<86400)return "vor "+Math.round(d/3600)+" Std";
+  return new Date(ts).toLocaleDateString("de-DE")+", "+new Date(ts).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});
+}
+
+/* Nur Trainingsdaten — niemals der Token. */
+function snapshot(){
+  return {app:"kartenpalast",v:1,updated:META.updated||Date.now(),palace:P,prog:prog,s3suits:s3suits};
+}
+function normPalace(o){
+  var out={rooms:[],read:!!(o&&o.read)};
+  for(var r=0;r<4;r++){
+    var src=(o&&o.rooms&&o.rooms[r])||{},sp=src.pts||[],pts=[];
+    for(var v=0;v<8;v++)pts.push(typeof sp[v]==="string"?sp[v]:"");
+    out.rooms.push({name:typeof src.name==="string"?src.name:"",pts:pts});
+  }
+  return out;
+}
+function snapFilled(o){
+  var c=0;try{normPalace(o.palace).rooms.forEach(function(rm){rm.pts.forEach(function(x){if(x.trim())c++})})}catch(e){}
+  return c;
+}
+function applySnap(o){
+  if(!o||typeof o!=="object")return false;
+  P=normPalace(o.palace);save("kp.palace",P);
+  prog=(o.prog&&typeof o.prog==="object")?o.prog:{};save("kp.prog",prog);
+  var su=[].concat(o.s3suits||[]).filter(function(x){return x===0||x===1||x===2||x===3});
+  s3suits=su.length?su:[0];save("kp.s3suits",s3suits);
+  META.updated=+o.updated||Date.now();META.remote=META.updated;save("kp.meta",META);
+  GH.synced=Date.now();ghSave();
+  return true;
+}
+
+function ghPull(cb){
+  if(!ghOn()){cb("Kein Repo eingetragen.");return}
+  fetch(ghApi()+"?ref="+encodeURIComponent(ghBranch())+"&t="+Date.now(),{headers:ghHead(),cache:"no-store"})
+    .then(function(r){
+      return r.json().then(null,function(){return null}).then(function(j){
+        if(r.status===404){cb("none");return}
+        if(!r.ok){cb(ghErr(r,j));return}
+        var o;
+        try{o=JSON.parse(b64dec(j.content))}catch(e){cb("Die Datei im Repo ist kein g\u00fcltiges JSON.");return}
+        GH.sha=j.sha;ghSave();
+        cb(null,o,j.sha);
+      });
+    },function(){cb("Netzwerkfehler \u2014 keine Verbindung zu GitHub.")});
+}
+
+function ghPush(opts,cb){
+  opts=opts||{};cb=cb||function(){};
+  function fail(m){ghNote(m,true);cb(m)}
+  if(!ghOn()){fail("Kein Repo eingetragen.");return}
+  if(!GH.token){fail("Kein Token auf diesem Ger\u00e4t \u2014 Speichern nicht m\u00f6glich.");return}
+  if(ghBusy){ghAgain=true;cb(null);return}
+  if(ghNew&&!ghForce){
+    if(!opts.manual){cb("Offener Konflikt.");return}
+    if(!confirm("Auf GitHub liegt eine neuere Version ("+relTime(+ghNew.updated||0)+", "+snapFilled(ghNew)+"/32 Punkte).\n\nMit den Daten von diesem Ger\u00e4t \u00fcberschreiben?")){
+      fail("Nicht gespeichert \u2014 auf GitHub liegt die neuere Version.");return;
+    }
+    ghNew=null;ghForce=true;drawHome();
+  }
+  clearTimeout(ghTimer);ghTimer=null;
+  ghBusy=true;ghNote("Speichert \u2026",false);
+  var snap=snapshot();
+  put(GH.sha,false);
+
+  function put(sha,retried){
+    var body={message:"Kartenpalast: "+filled()+"/32 Punkte",branch:ghBranch(),
+      content:b64enc(JSON.stringify(snap,null,2))};
+    if(sha)body.sha=sha;
+    var h=ghHead();h["Content-Type"]="application/json";
+    var init={method:"PUT",headers:h,body:JSON.stringify(body)};
+    if(opts.keepalive)init.keepalive=true;
+    fetch(ghApi(),init).then(function(r){
+      return r.json().then(null,function(){return null}).then(function(j){
+        if(r.ok){
+          GH.sha=(j&&j.content&&j.content.sha)||"";GH.synced=Date.now();ghSave();
+          META.remote=snap.updated;save("kp.meta",META);
+          done(null);return;
+        }
+        if((r.status===409||r.status===422)&&!retried&&!opts.keepalive){resolve(snap);return}
+        done(ghErr(r,j));
+      });
+    },function(){done("Netzwerkfehler \u2014 keine Verbindung zu GitHub.")});
+  }
+  function resolve(snap){
+    ghPull(function(err,o,sha){
+      if(err==="none"){put("",true);return}
+      if(err){done(err);return}
+      var ru=o?(+o.updated||0):0;
+      if(!ghForce&&ru>snap.updated&&
+         !confirm("Auf GitHub liegt eine neuere Version ("+relTime(ru)+", "+snapFilled(o)+"/32 Punkte).\n\nMit den Daten von diesem Ger\u00e4t \u00fcberschreiben?")){
+        done("Nicht gespeichert \u2014 auf GitHub liegt die neuere Version.");return;
+      }
+      put(sha,true);
+    });
+  }
+  function done(err){
+    ghBusy=false;ghForce=false;
+    ghNote(err||"Gespeichert.",!!err);
+    drawHome();
+    if(ghAgain){ghAgain=false;if(!err)dirty()}
+    cb(err||null);
+  }
+}
+
+function dirty(){
+  META.updated=Date.now();save("kp.meta",META);
+  paintSync();paintHomeSync();
+  if(ghNew&&!ghForce)return;
+  if(!(GH.auto&&ghCanWrite()))return;
+  clearTimeout(ghTimer);
+  ghTimer=setTimeout(function(){ghTimer=null;ghPush({})},5000);
+}
+
+function ghStatusText(){
+  if(!ghOn())return "nicht eingerichtet";
+  if(ghBusy)return "speichert \u2026";
+  if(ghNew)return "neuere Version im Repo \u2014 bitte entscheiden";
+  if(META.updated>META.remote)return GH.token?(GH.auto?"\u00c4nderungen, wird gleich gespeichert":"\u00c4nderungen nicht gespeichert"):"\u00c4nderungen nur auf diesem Ger\u00e4t (kein Token)";
+  if(GH.synced)return "gespeichert "+relTime(GH.synced);
+  return "bereit";
+}
+function paintHomeSync(){
+  var el=$("#syncstate");if(el)el.textContent=ghStatusText();
+  var b=$("#tosync");if(b)b.textContent=ghOn()?"GitHub-Sync":"GitHub-Sync einrichten";
+}
+function paintBanner(){
+  var el=$("#syncbanner");if(!el)return;
+  if(!ghNew){el.innerHTML="";return}
+  el.innerHTML='<div class="banner">Auf GitHub liegt eine neuere Version ('+esc(relTime(+ghNew.updated||0))+', '+
+    snapFilled(ghNew)+'/32 Punkte). Dieses Ger\u00e4t hat '+filled()+'/32.'+
+    '<div class="row" style="margin-top:11px"><button class="btn small solid" id="bn-y">Laden</button>'+
+    '<button class="btn small" id="bn-n">Diese behalten</button></div></div>';
+  $("#bn-y").onclick=function(){var o=ghNew;ghNew=null;applySnap(o);drawHome();ghNote("Von GitHub geladen.",false)};
+  $("#bn-n").onclick=function(){ghNew=null;ghForce=true;dirty();drawHome()};
+}
+function paintSync(){
+  var el=$("#sync-state");if(!el)return;
+  var h='<div class="lbl">Status</div><div style="font-family:Georgia,serif;font-size:19px">'+esc(ghStatusText())+'</div>';
+  if(ghOn())h+='<div class="lbl" style="margin-top:9px">'+esc(GH.owner.trim()+"/"+GH.repo.trim()+" \u00b7 "+ghBranch()+" \u00b7 "+ghPath())+'</div>';
+  if(ghMsg)h+='<div style="font-size:14px;margin-top:9px;color:'+(ghBad?"var(--warn)":"var(--ok)")+'">'+esc(ghMsg)+'</div>';
+  el.innerHTML=h;
+  var a=$("#gh-autost");if(a)a.textContent=GH.auto?"an":"aus";
+  paintHomeSync();
+}
+function openSync(){stopTimers();drawSync();view("sync")}
+function drawSync(){
+  $("#gh-owner").value=GH.owner;$("#gh-repo").value=GH.repo;
+  $("#gh-branch").value=GH.branch;$("#gh-path").value=GH.path;$("#gh-token").value=GH.token;
+  paintSync();
+}
+[["gh-owner","owner"],["gh-repo","repo"],["gh-branch","branch"],["gh-path","path"],["gh-token","token"]].forEach(function(f){
+  $("#"+f[0]).addEventListener("input",function(){
+    GH[f[1]]=this.value;
+    if(f[1]!=="token")GH.sha="";
+    ghSave();ghNote("",false);
+  });
+});
+$("#gh-push").onclick=function(){ghPush({manual:true})};
+$("#gh-pull").onclick=function(){
+  ghNote("L\u00e4dt \u2026",false);
+  ghPull(function(err,o){
+    if(err==="none"){ghNote("Im Repo liegt noch keine Datei \u2014 erst einmal speichern.",true);return}
+    if(err){ghNote(err,true);return}
+    if(filled()>0&&!confirm("Daten von GitHub laden?\n\nGitHub: "+snapFilled(o)+"/32 Punkte, "+relTime(+o.updated||0)+
+      "\nDieses Ger\u00e4t: "+filled()+"/32 Punkte\n\nDie Daten auf diesem Ger\u00e4t werden ersetzt."))return;
+    applySnap(o);ghNew=null;drawHome();ghNote("Von GitHub geladen.",false);
+  });
+};
+$("#gh-auto").onclick=function(){
+  GH.auto=!GH.auto;ghSave();paintSync();
+  if(GH.auto&&META.updated>META.remote)dirty();
+};
+$("#gh-forget").onclick=function(){
+  if(!GH.token){ghNote("Auf diesem Ger\u00e4t ist kein Token gespeichert.",true);return}
+  if(!confirm("Token auf diesem Ger\u00e4t l\u00f6schen? Laden geht weiter, Speichern nicht mehr."))return;
+  GH.token="";ghSave();$("#gh-token").value="";ghNote("Token gel\u00f6scht.",false);
+};
+$("#tosync").onclick=openSync;
+
+document.addEventListener("visibilitychange",function(){
+  if(document.visibilityState!=="hidden")return;
+  if(ghNew&&!ghForce)return;
+  if(GH.auto&&ghCanWrite()&&META.updated>META.remote&&!ghBusy){clearTimeout(ghTimer);ghTimer=null;ghPush({keepalive:true})}
+});
+
+function ghBoot(){
+  if(!ghOn())return;
+  ghPull(function(err,o){
+    if(err==="none"){paintSync();return}
+    if(err){ghNote(err,true);return}
+    var ru=+o.updated||0;
+    if(filled()===0&&snapFilled(o)>0){applySnap(o);drawHome();ghNote("Von GitHub geladen.",false);return}
+    if(ru>META.updated){ghNew=o;drawHome();return}
+    META.remote=ru;save("kp.meta",META);
+    if(META.updated>ru&&filled()>0&&GH.auto&&ghCanWrite())dirty();
+    paintSync();
+  });
+}
+
 /* ---------- Reset ---------- */
 $("#clrprog").onclick=function(){
-  if(confirm("Fortschritt aller Stufen löschen? Der Palast bleibt erhalten.")){prog={};save("kp.prog",prog);drawHome()}
+  if(confirm("Fortschritt aller Stufen löschen? Der Palast bleibt erhalten.")){prog={};save("kp.prog",prog);dirty();drawHome()}
 };
 $("#clrall").onclick=function(){
   if(confirm("Palast, Punkte und Fortschritt unwiderruflich löschen?")){
-    ["kp.palace","kp.prog","kp.s3suits"].forEach(function(k){localStorage.removeItem(k)});
+    ["kp.palace","kp.prog","kp.s3suits","kp.meta"].forEach(function(k){localStorage.removeItem(k)});
     location.reload();
   }
 };
@@ -514,6 +816,7 @@ var l=document.createElement("link");l.rel="manifest";
 try{l.href=URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:"application/json"}));document.head.appendChild(l)}catch(e){}
 
 drawHome();
+ghBoot();
 })();
 </script>
 </body>
