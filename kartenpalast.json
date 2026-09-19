@@ -1,7 +1,7 @@
 {
   "app": "kartenpalast",
   "v": 1,
-  "updated": 1789818602573,
+  "updated": 1789819192980,
   "palace": {
     "rooms": [
       {
@@ -63,6 +63,10 @@
     "s1": {
       "ok": true,
       "txt": "fertig"
+    },
+    "s3": {
+      "ok": false,
+      "txt": "3.1s"
     }
   },
   "s3suits": [
