@@ -1,0 +1,74 @@
+{
+  "app": "kartenpalast",
+  "v": 1,
+  "updated": 1789818602573,
+  "palace": {
+    "rooms": [
+      {
+        "name": "Eingangsraum",
+        "pts": [
+          "Schirmständer",
+          "Schuhregal",
+          "Kühlschrank",
+          "Waschmaschine",
+          "Großes Regal",
+          "Metalschrank",
+          "Tiefkühler",
+          "Bierkästen"
+        ]
+      },
+      {
+        "name": "Aufhängeraum",
+        "pts": [
+          "Mülleimer",
+          "Sockenaufhänger",
+          "Wasserboiler",
+          "Schlitten",
+          "Wäscheleine",
+          "WECK-Schrank",
+          "Kleiderschrank",
+          "Grillzeug-Schrank"
+        ]
+      },
+      {
+        "name": "Altes Gästezimmer",
+        "pts": [
+          "Angelschrank",
+          "Holzlager",
+          "Pool-Tisch",
+          "Isomatten Schlafsäcke",
+          "Mäher",
+          "Metalregal rechts",
+          "Kofferlager",
+          "Metalregal links"
+        ]
+      },
+      {
+        "name": "Werkraum",
+        "pts": [
+          "Werkbank 1",
+          "Metalregal Tücher",
+          "Standsäge",
+          "Werkbank 2",
+          "Schrauben und Nägel",
+          "Router",
+          "Kabel",
+          "Metalreste"
+        ]
+      }
+    ],
+    "read": true
+  },
+  "prog": {
+    "s1": {
+      "ok": true,
+      "txt": "fertig"
+    }
+  },
+  "s3suits": [
+    0,
+    3,
+    2,
+    1
+  ]
+}
