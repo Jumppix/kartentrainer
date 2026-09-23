@@ -25,6 +25,22 @@ Die sechs Stufen (Rohbau, Route, Zuordnung, Markieren, Tempo, Rotation) lassen
 sich jederzeit in beliebiger Reihenfolge öffnen. Ist der Palast noch nicht
 vollständig, heißen die leeren Plätze in den Übungen „Punkt 1“ bis „Punkt 32“.
 
+## Spielnah
+
+Drei Übungen für den Übertrag an den Tisch. Sie setzen den Trainingsplan nicht
+fort, sondern zielen auf das, was im echten Spiel klemmt. Die Methode dahinter
+steht in [SPIELPRAXIS.md](SPIELPRAXIS.md).
+
+| Übung | Was sie misst | Kriterium |
+|-------|---------------|-----------|
+| **Reaktion** | Karte und Ort zusammen — passt das Paar? Ja/Nein auf Zeit, mit hartnäckigen Ablenkern aus demselben Raum oder demselben Platz. Wahlweise mit Limit von 3 oder 2 Sekunden. | alle 20 richtig, keine Falschmeldung, Schnitt unter 1,2 s |
+| **Restkarten** | Nach dem Markieren fragt die App nach einer Farbe oder einem Wert: was davon ist noch draußen? Trainiert den Raum- und den Querschnitt-Griff statt des Rundgangs. | alle fünf Abfragen exakt |
+| **Spielhand** | Stiche zu dritt, gemischt wie am Tisch. Gemerkt werden nur die Trümpfe. Grand (4), Farbspiel (11) oder Farbspiel mit eigener Hand — dann zählt nur, was die Gegner noch haben können. | keinen Trumpf übersehen |
+
+Alle drei werten **Übersehen** und **Zu vorsichtig** getrennt aus: eine Karte
+für gespielt zu halten, die noch liegt, kostet im Spiel den Stich — umgekehrt
+kostet es nur Respekt.
+
 ## Daten über GitHub synchronisieren
 
 Palast, Fortschritt und Farbfilter liegen als JSON-Datei im Repo
@@ -69,6 +85,7 @@ GitHub-Sync ein; mit Token liest die App auch daraus.
 | `kp.palace` | Räume, 32 Punkte, „laut vorgelesen“-Flag |
 | `kp.prog` | Ergebnis je Stufe |
 | `kp.s3suits` | Farbfilter Stufe 3 |
+| `kp.opts` | Einstellungen der spielnahen Übungen |
 | `kp.meta` | Zeitstempel für den Abgleich |
 | `kp.gh` | Repo, Branch, Dateiname, Token |
 

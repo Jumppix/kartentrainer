@@ -72,6 +72,11 @@ a{color:var(--gold)}
 .chip{display:inline-block;background:var(--felt2);border:1px solid var(--line);border-radius:20px;
  padding:8px 14px;font-size:14px;color:var(--dim);margin:0 6px 8px 0}
 .chip.on{color:var(--cream);border-color:var(--cream);background:#204E3D}
+.chip.big{min-height:50px;padding:13px 17px;font-size:16px;font-family:Georgia,serif}
+.cards{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap}
+.stage.short{min-height:120px}
+.hand{font-family:Georgia,serif;font-size:17px;line-height:1.9}
+.big{font-family:Georgia,serif;font-size:25px}
 .banner{background:var(--felt2);border:1px solid var(--gold);border-radius:10px;padding:13px;margin-bottom:14px;font-size:14px}
 .note{font-size:13px;color:var(--dim);border-top:1px solid var(--line);margin-top:24px;padding-top:13px}
 .lnk{background:none;border:0;color:var(--gold);font:inherit;padding:0;text-decoration:underline}
@@ -152,6 +157,7 @@ var SUITS=[{s:"\u2663",n:"Kreuz",r:0},{s:"\u2660",n:"Pik",r:0},{s:"\u2665",n:"He
 var VALS=["7","8","9","10","J","D","K","A"];
 var MARK=["Feuer","Wasser","Schnee"];
 var PACES=[5000,3000,1500,1000,800];
+var VALNAME=["Siebenen","Achten","Neunen","Zehnen","Buben","Damen","Könige","Asse"];
 var LAY={
  "7":[[28,17],[72,17],[50,33],[28,50],[72,50],[28,83],[72,83]],
  "8":[[28,17],[72,17],[50,33],[28,50],[72,50],[50,67],[28,83],[72,83]],
@@ -168,6 +174,7 @@ function esc(s){return (s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").repl
 var P=load("kp.palace",{rooms:[0,1,2,3].map(function(){return {name:"",pts:["","","","","","","",""]}}),read:false});
 var prog=load("kp.prog",{});
 var s3suits=load("kp.s3suits",[0]);
+var OPTS=load("kp.opts",{limit:0,fall:16,spiel:"farb",takt:0});
 var META=load("kp.meta",{updated:0,remote:0});
 var GH=(function(){
   var d=ghDefaults(),g=load("kp.gh",null);
@@ -222,14 +229,22 @@ var STAGES=[
  {id:3,t:"Zuordnung verankern",d:"Karte ↔ Ort, beide Richtungen"},
  {id:4,t:"Markieren und auslesen",d:"Merken, dann Negativabfrage"},
  {id:5,t:"Tempo",d:"Sekundentakt, keine Bedenkzeit"},
- {id:6,t:"Rotation",d:"Zwei Durchgänge, zwei Marker"}
+ {id:6,t:"Rotation",d:"Zwei Durchgänge, zwei Marker"},
+ {id:7,t:"Reaktion",d:"Karte und Ort — passt das? Auf Zeit",g:1},
+ {id:8,t:"Restkarten",d:"Was ist in Farbe oder Wert noch draußen?",g:1},
+ {id:9,t:"Spielhand",d:"Trümpfe, stichweise, wie am Tisch",g:1}
 ];
+function stageBtn(s){
+  var p=prog["s"+s.id];
+  var st='<span class="st'+(p&&p.ok?" good":"")+'">'+(p?esc(p.txt):"—")+'</span>';
+  return '<button class="stage-btn" data-s="'+s.id+'">'+st+(s.g?"":"Stufe "+s.id+" — ")+s.t+'<small>'+s.d+'</small></button>';
+}
 function drawHome(){
-  $("#stagelist").innerHTML=STAGES.map(function(s){
-    var p=prog["s"+s.id];
-    var st='<span class="st'+(p&&p.ok?" good":"")+'">'+(p?esc(p.txt):"—")+'</span>';
-    return '<button class="stage-btn" data-s="'+s.id+'">'+st+'Stufe '+s.id+' — '+s.t+'<small>'+s.d+'</small></button>';
-  }).join("");
+  $("#stagelist").innerHTML=
+    STAGES.filter(function(s){return !s.g}).map(stageBtn).join("")+
+    '<div class="sec">Spielnah</div>'+
+    '<p class="hint">Für das, was am Tisch klemmt: Tempo beim Nachschlagen, Auslesen ohne Rundgang, Trümpfe stichweise.</p>'+
+    STAGES.filter(function(s){return s.g}).map(stageBtn).join("");
   $$("#stagelist .stage-btn").forEach(function(b){b.onclick=function(){openStage(+b.dataset.s)}});
   paintBanner();paintHomeSync();
 }
@@ -244,7 +259,7 @@ function openStage(id){
   if(id===1){drawPalace();view("palace");return}
   $("#ex-done").className="hide";$("#ex-run").className="hide";$("#ex-intro").className="";
   view("ex");
-  ({2:introS2,3:introS3,4:introS4,5:introS5,6:introS6})[id]();
+  ({2:introS2,3:introS3,4:introS4,5:introS5,6:introS6,7:introS7,8:introS8,9:introS9})[id]();
   addGapNote();
 }
 
@@ -296,6 +311,7 @@ function runQuiz(cfg){
   step();
   function step(){
     $("#ex-prog").textContent=(i+1)+" von "+cfg.items.length;
+    $("#ex-stage").className="stage";
     $("#ex-stage").innerHTML=cfg.prompt(cfg.items[i]);
     $("#ex-ctrl").innerHTML='<button class="btn solid" id="rev">Auflösen</button>';
     t0=Date.now();
@@ -305,7 +321,7 @@ function runQuiz(cfg){
     var dt=(Date.now()-t0)/1000;
     $("#ex-ctrl").innerHTML='<div class="answer">'+cfg.answer(cfg.items[i])+'</div>'+
       '<div class="row"><button class="btn solid" id="ok">Richtig</button><button class="btn" id="no">Daneben</button></div>'+
-      '<div class="lbl" style="text-align:center;margin-top:10px">'+dt.toFixed(1)+' s</div>';
+      '<div class="lbl" style="text-align:center;margin-top:10px">'+sek(dt)+'</div>';
     $("#ok").onclick=function(){next(true,dt)};
     $("#no").onclick=function(){next(false,dt)};
   }
@@ -321,12 +337,12 @@ function summary(res,critFn,critText,labelFn){
   var pass=critFn(res,ok,avg);
   var h='<div class="verdict '+(pass?"v-ok":"v-no")+'">'+(pass?"Kriterium erfüllt. ":"Noch nicht. ")+critText+'</div>';
   h+='<div class="stats"><div class="stat"><span class="lbl">Richtig</span><b>'+ok.length+'/'+res.length+'</b></div>'+
-     '<div class="stat"><span class="lbl">Schnitt</span><b>'+(ok.length?avg.toFixed(1)+"s":"—")+'</b></div></div>';
+     '<div class="stat"><span class="lbl">Schnitt</span><b>'+(ok.length?sek(avg):"—")+'</b></div></div>';
   var weak=res.filter(function(r){return !r.ok||r.t>3}).sort(function(a,b){return (a.ok?1:0)-(b.ok?1:0)||b.t-a.t}).slice(0,12);
   if(weak.length){
     h+='<div class="lbl">Wackelkandidaten</div>';
     weak.forEach(function(r){
-      h+='<div class="item"><span class="c">'+labelFn(r.it)+'</span><span class="v">'+(r.ok?r.t.toFixed(1)+"s":"daneben")+'</span></div>';
+      h+='<div class="item"><span class="c">'+labelFn(r.it)+'</span><span class="v">'+(r.ok?sek(r.t):"daneben")+'</span></div>';
     });
   }
   return {html:h,pass:pass,avg:avg,ok:ok.length};
@@ -412,10 +428,94 @@ function s3run(dir){
     onDone:function(res){
       var s=summary(res,function(r,ok,avg){return ok.length===r.length&&avg<2},
         "Ziel: alle richtig, Schnitt unter 2 Sekunden.",cardLabel);
-      if(dir==="c2p"&&s3suits.length===4)mark(3,s.pass,s.avg?s.avg.toFixed(1)+"s":"—");
+      if(dir==="c2p"&&s3suits.length===4)mark(3,s.pass,s.avg?sek(s.avg):"—");
       doneScreen(s.html,function(){s3run(dir)});
     }
   });
+}
+
+/* ---------- Bausteine für Stufe 4-9 ---------- */
+function allIdx(){var a=[];for(var i=0;i<32;i++)a.push(i);return a}
+function cardTag(i){
+  var c=cardAt(i);
+  return '<span style="color:'+(c.red?"#E08074":"var(--cream)")+'">'+c.s+"\u2009"+c.r+'</span>';
+}
+/* Trümpfe eines Farbspiels: vier Buben, dann die Trumpffarbe von oben nach unten.
+   ts<0 steht für Grand, da sind nur die Buben Trumpf. */
+function trumpList(ts){
+  var a=[0,1,2,3].map(function(r){return idxOf(r,4)});
+  if(ts>=0)[7,3,6,5,2,1,0].forEach(function(v){a.push(idxOf(ts,v))});
+  return a;
+}
+/* Verwechslungskandidat: gleicher Raum oder gleicher Platz — genau das, was im Spiel schiefgeht. */
+function nearMiss(i){
+  var r=Math.floor(i/8),v=i%8,pool=[];
+  for(var k=0;k<8;k++)if(k!==v)pool.push(r*8+k);
+  for(var q=0;q<4;q++)if(q!==r)pool.push(q*8+v);
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+function without(a,b){return a.filter(function(x){return b.indexOf(x)<0})}
+
+/* Karten der Reihe nach zeigen, einzeln oder stichweise. */
+function dealPhase(cfg){
+  var per=cfg.per||1,k=0;
+  step();
+  function step(){
+    stopTimers();
+    var grp=cfg.list.slice(k,k+per);
+    $("#ex-prog").textContent=cfg.label(k);
+    $("#ex-note").textContent=cfg.note||"";
+    $("#ex-stage").className="stage";
+    $("#ex-stage").innerHTML='<div class="cards">'+grp.map(function(i){
+      return cardSVG(cardAt(i),per>1?96:184);
+    }).join("")+'</div>';
+    if(cfg.pace){
+      $("#ex-ctrl").innerHTML='<div class="lbl" style="text-align:center;padding:16px 0">läuft automatisch</div>';
+      timers.push(setTimeout(next,cfg.pace));
+    } else {
+      $("#ex-ctrl").innerHTML='<button class="btn solid" id="mk">'+(cfg.btn||"Markiert")+'</button>';
+      $("#mk").onclick=next;
+    }
+  }
+  function next(){k+=per;if(k<cfg.list.length)step();else{stopTimers();cfg.onDone()}}
+}
+
+/* Mehrfachauswahl über Karten — die Abfrage, die man am Tisch wirklich stellt. */
+function pickPhase(cfg){
+  stopTimers();
+  var sel=[];
+  draw();
+  function draw(){
+    $("#ex-prog").textContent=cfg.prog||"";
+    $("#ex-note").textContent=cfg.note||"";
+    $("#ex-stage").className="stage short";
+    $("#ex-stage").innerHTML='<div><div class="bigtxt">'+cfg.q+'</div>'+
+      (cfg.sub?'<div class="lbl" style="margin-top:8px">'+cfg.sub+'</div>':'')+
+      (cfg.aside?'<div class="hand" style="margin-top:10px">'+cfg.aside+'</div>':'')+'</div>';
+    $("#ex-ctrl").innerHTML='<div id="pk" style="margin-bottom:16px">'+cfg.items.map(function(i){
+      return '<button class="chip big'+(sel.indexOf(i)>-1?" on":"")+'" data-i="'+i+'">'+cardLabel(i)+'</button>';
+    }).join("")+'</div><button class="btn solid" id="ok">Fertig</button>';
+    $$("#pk .chip").forEach(function(b){
+      b.onclick=function(){
+        var i=+b.dataset.i,k=sel.indexOf(i);
+        if(k>-1)sel.splice(k,1);else sel.push(i);
+        draw();
+      };
+    });
+    $("#ok").onclick=function(){cfg.onDone(sel.slice())};
+  }
+}
+function itemsBlock(title,arr,noteFn){
+  if(!arr.length)return "";
+  var h='<div class="lbl" style="margin-top:16px">'+title+'</div>';
+  arr.forEach(function(i){
+    h+='<div class="item"><span class="c">'+cardLabel(i)+'</span><span class="v">'+
+       esc(ptName(i))+(noteFn?" · "+noteFn(i):"")+'</span></div>';
+  });
+  return h;
+}
+function startRun(){
+  $("#ex-intro").className="hide";$("#ex-done").className="hide";$("#ex-run").className="";
 }
 
 /* ---------- Stufen 4–6 ---------- */
@@ -429,7 +529,8 @@ function introS4(){
     b.onclick=function(){memRun({n:+b.dataset.n,pace:0,stage:4,runs:1})};
   });
 }
-function paceLabel(ms){return (ms/1000).toFixed(1).replace(".",",")+" s"}
+function sek(t,d){return t.toFixed(d===undefined?1:d).replace(".",",")+" s"}
+function paceLabel(ms){return sek(ms/1000)}
 function introS5(){
   $("#ex-intro").innerHTML='<h2>Stufe 5 — Tempo</h2>'+
    '<p class="hint">Die Karten laufen von selbst weiter. Kein Zurück, keine Bedenkzeit. Fang oben an und arbeite dich nach unten.</p>'+
@@ -453,38 +554,25 @@ function introS6(){
 }
 
 function memRun(cfg){
-  var all=[];for(var i=0;i<32;i++)all.push(i);
+  var all=allIdx();
   var run1=shuffle(all.slice()).slice(0,cfg.n);
   var run2=cfg.runs===2?shuffle(all.slice()).slice(0,cfg.n):null;
-  var cur=1,list=run1,k=0;
-  $("#ex-intro").className="hide";$("#ex-done").className="hide";$("#ex-run").className="";
-  showCard();
+  startRun();
+  deal(1);
 
-  function showCard(){
-    stopTimers();
-    $("#ex-prog").textContent=(k+1)+" von "+list.length+(cfg.runs===2?"  ·  Durchgang "+cur:"");
-    $("#ex-note").textContent=cur===1?MARK[0]:MARK[1];
-    $("#ex-stage").innerHTML=cardSVG(cardAt(list[k]));
-    if(cfg.pace){
-      $("#ex-ctrl").innerHTML='<div class="lbl" style="text-align:center;padding:16px 0">läuft automatisch</div>';
-      timers.push(setTimeout(adv,cfg.pace));
-    } else {
-      $("#ex-ctrl").innerHTML='<button class="btn solid" id="mk">Markiert</button>';
-      $("#mk").onclick=adv;
-    }
-  }
-  function adv(){
-    k++;
-    if(k<list.length){showCard();return}
-    if(cfg.runs===2&&cur===1){
-      stopTimers();cur=2;list=run2;k=0;
-      $("#ex-prog").textContent="";$("#ex-note").textContent="";
-      $("#ex-stage").innerHTML='<div><div class="bigtxt">Durchgang 2</div><div class="lbl" style="margin-top:12px">Neuer Marker: '+MARK[1]+'</div></div>';
-      $("#ex-ctrl").innerHTML='<button class="btn solid" id="go2">Weiter</button>';
-      $("#go2").onclick=showCard;
-      return;
-    }
-    askPhase();
+  function deal(cur){
+    var list=cur===1?run1:run2;
+    dealPhase({
+      list:list,pace:cfg.pace,note:cur===1?MARK[0]:MARK[1],
+      label:function(k){return (k+1)+" von "+list.length+(cfg.runs===2?"  ·  Durchgang "+cur:"")},
+      onDone:function(){
+        if(cfg.runs!==2||cur===2){askPhase();return}
+        $("#ex-prog").textContent="";$("#ex-note").textContent="";
+        $("#ex-stage").innerHTML='<div><div class="bigtxt">Durchgang 2</div><div class="lbl" style="margin-top:12px">Neuer Marker: '+MARK[1]+'</div></div>';
+        $("#ex-ctrl").innerHTML='<button class="btn solid" id="go2">Weiter</button>';
+        $("#go2").onclick=function(){deal(2)};
+      }
+    });
   }
 
   function askPhase(){
@@ -502,6 +590,7 @@ function memRun(cfg){
       var it=pool[q];
       $("#ex-prog").textContent="Abfrage "+(q+1)+" von "+pool.length;
       $("#ex-note").textContent=cfg.runs===2?MARK[1]:"";
+      $("#ex-stage").className="stage";
       $("#ex-stage").innerHTML=cardSVG(cardAt(it.i),158);
       $("#ex-ctrl").innerHTML='<div class="lbl" style="text-align:center;margin-bottom:10px">Schon gespielt?</div>'+
         '<div class="row"><button class="btn solid" id="y">Ja</button><button class="btn" id="n">Nein</button></div>';
@@ -547,6 +636,242 @@ function memRun(cfg){
     }
     mark(cfg.stage,pass,right.length+"/"+ans.length+(cfg.pace?" \u00b7 "+paceLabel(cfg.pace):""));
     doneScreen(h,function(){openStage(cfg.stage)});
+  }
+}
+
+/* ---------- Reaktion (Stufe 7) ---------- */
+function saveOpts(){save("kp.opts",OPTS);dirty()}
+function optRow(id,list,cur,lab,fn){
+  function draw(){
+    $("#"+id).innerHTML=list.map(function(v){
+      return '<button class="btn small'+(cur()===v?" solid":"")+'" data-v="'+v+'">'+lab(v)+'</button>';
+    }).join("");
+    $$("#"+id+" [data-v]").forEach(function(b){
+      b.onclick=function(){fn(b.dataset.v);draw()};
+    });
+  }
+  draw();
+}
+
+function introS7(){
+  $("#ex-intro").innerHTML='<h2>Reaktion</h2>'+
+   '<p class="hint">Karte und Ort stehen zusammen da — passt das Paar? Nicht nachschlagen, erkennen. Dieser Griff muss von selbst kommen, sonst reicht die Zeit am Tisch nie.</p>'+
+   '<p class="crit">Fertig, wenn alle 20 sitzen, keine Falschmeldung, Schnitt unter 1,2 Sekunden.</p>'+
+   '<div class="lbl">Zeitdruck</div><div class="row3" id="o7"></div>'+
+   '<p class="hint" style="margin:12px 0 16px">Mit Limit zählt jedes Paar als daneben, das du nicht rechtzeitig beantwortest.</p>'+
+   '<button class="btn solid" id="go">20 Paare</button>';
+  optRow("o7",[0,3000,2000],function(){return OPTS.limit},
+    function(v){return v?paceLabel(v):"ohne"},
+    function(v){OPTS.limit=+v;saveOpts()});
+  $("#go").onclick=function(){s7run(OPTS.limit)};
+}
+function s7run(limit){
+  var items=shuffle(allIdx()).slice(0,20).map(function(i,n){
+    return {i:i,p:n<10?i:nearMiss(i),ok:n<10};
+  });
+  shuffle(items);
+  var q=0,res=[];
+  startRun();
+  step();
+
+  function step(){
+    stopTimers();
+    var it=items[q],t0=Date.now(),used=false;
+    $("#ex-prog").textContent=(q+1)+" von "+items.length;
+    $("#ex-note").textContent=limit?paceLabel(limit):"";
+    $("#ex-stage").className="stage";
+    $("#ex-stage").innerHTML='<div><div class="cards">'+cardSVG(cardAt(it.i),124)+'</div>'+
+      '<div class="bigtxt" style="margin-top:14px">'+esc(ptName(it.p))+'</div>'+
+      '<div class="lbl" style="margin-top:4px">'+esc(roomName(Math.floor(it.p/8)))+'</div></div>';
+    $("#ex-ctrl").innerHTML='<div class="lbl" style="text-align:center;margin-bottom:10px">Gehört das zusammen?</div>'+
+      '<div class="row"><button class="btn solid" id="y">Ja</button><button class="btn" id="n">Nein</button></div>';
+    $("#y").onclick=function(){pick(true)};
+    $("#n").onclick=function(){pick(false)};
+    if(limit)timers.push(setTimeout(function(){pick(null)},limit));
+
+    function pick(said){
+      if(used)return;
+      used=true;stopTimers();
+      res.push({i:it.i,p:it.p,ok:it.ok,said:said,
+        t:said===null?limit/1000:(Date.now()-t0)/1000});
+      q++;
+      if(q<items.length)step();else finish();
+    }
+  }
+  function finish(){
+    stopTimers();
+    $("#ex-run").className="hide";$("#ex-done").className="";
+    var right=res.filter(function(r){return r.said===r.ok});
+    var fp=res.filter(function(r){return !r.ok&&r.said===true});
+    var fn=res.filter(function(r){return r.ok&&r.said===false});
+    var late=res.filter(function(r){return r.said===null});
+    var avg=res.reduce(function(a,r){return a+r.t},0)/res.length;
+    var pass=right.length===res.length&&avg<1.2;
+    var h='<div class="verdict '+(pass?"v-ok":"v-no")+'">'+(pass?"Kriterium erfüllt. ":"Noch nicht. ")+
+      'Ziel: alle 20 richtig, keine Falschmeldung, Schnitt unter 1,2 Sekunden.</div>'+
+      '<div class="stats"><div class="stat"><span class="lbl">Richtig</span><b>'+right.length+'/'+res.length+'</b></div>'+
+      '<div class="stat"><span class="lbl">Schnitt</span><b>'+sek(avg,2)+'</b></div></div>';
+    if(fp.length){
+      h+='<div class="verdict v-no" style="font-size:14px">Falschmeldung: du hast ein falsches Paar bestätigt. Im Spiel markierst du damit den falschen Ort — und suchst die Karte später dort, wo sie nie war.</div>';
+      h+='<div class="lbl" style="margin-top:16px">Falsch bestätigt</div>';
+      fp.forEach(function(r){
+        h+='<div class="item"><span class="c">'+cardLabel(r.i)+'</span><span class="v">nicht '+esc(ptName(r.p))+', sondern '+esc(ptName(r.i))+'</span></div>';
+      });
+    }
+    if(fn.length){
+      h+='<div class="lbl" style="margin-top:16px">Richtiges Paar abgelehnt</div>';
+      fn.forEach(function(r){
+        h+='<div class="item"><span class="c">'+cardLabel(r.i)+'</span><span class="v">'+esc(ptName(r.i))+'</span></div>';
+      });
+    }
+    if(late.length)h+='<div class="lbl" style="margin-top:16px">Zu langsam: '+late.length+'</div>';
+    h+='<div class="lbl" style="margin-top:16px">Langsamste</div>';
+    res.slice().sort(function(a,b){return b.t-a.t}).slice(0,5).forEach(function(r){
+      h+='<div class="item"><span class="c">'+cardLabel(r.i)+'</span><span class="v">'+sek(r.t,2)+'</span></div>';
+    });
+    mark(7,pass,right.length+"/"+res.length+" \u00b7 "+sek(avg));
+    doneScreen(h,function(){s7run(limit)});
+  }
+}
+
+/* ---------- Restkarten (Stufe 8) ---------- */
+function introS8(){
+  $("#ex-intro").innerHTML='<h2>Restkarten</h2>'+
+   '<p class="hint">Karten fallen, danach fragt die App nach einer Farbe oder einem Wert: was davon ist noch draußen? Das ist der Griff für den Tisch — ein Raum, oder derselbe Platz in allen vier Räumen. Kein Rundgang.</p>'+
+   '<p class="crit">Fertig, wenn alle fünf Abfragen exakt stimmen. Übersehen ist schlimmer als zu vorsichtig.</p>'+
+   '<div class="lbl">Wie viele Karten fallen</div>'+
+   '<div class="row3" id="o8"></div>';
+  optRow("o8",[10,16,22],function(){return OPTS.fall},
+    function(v){return String(v)},
+    function(v){OPTS.fall=+v;saveOpts();s8run(+v)});
+}
+function s8run(n){
+  var played=shuffle(allIdx()).slice(0,n);
+  startRun();
+  dealPhase({list:played,note:MARK[0],
+    label:function(k){return (k+1)+" von "+played.length},
+    onDone:ask});
+
+  function ask(){
+    var qs=[];
+    shuffle([0,1,2,3]).slice(0,3).forEach(function(r){qs.push({raum:r})});
+    shuffle([4,7,3]).slice(0,2).forEach(function(v){qs.push({wert:v})});
+    shuffle(qs);
+    var qi=0,out=[];
+    step();
+    function step(){
+      var qq=qs[qi],raum=("raum" in qq);
+      var items=raum?VALS.map(function(_,v){return idxOf(qq.raum,v)})
+                    :[0,1,2,3].map(function(r){return idxOf(r,qq.wert)});
+      pickPhase({
+        prog:"Abfrage "+(qi+1)+" von "+qs.length,
+        q:raum?(SUITS[qq.raum].s+" "+SUITS[qq.raum].n):VALNAME[qq.wert],
+        sub:"Was davon ist noch draußen?",
+        items:items,
+        onDone:function(sel){
+          out.push({right:without(items,played),sel:sel});
+          qi++;
+          if(qi<qs.length)step();else finish(out);
+        }
+      });
+    }
+  }
+  function finish(out){
+    stopTimers();
+    $("#ex-run").className="hide";$("#ex-done").className="";
+    var missed=[],over=[],exact=0;
+    out.forEach(function(o){
+      var m=without(o.right,o.sel),v=without(o.sel,o.right);
+      if(!m.length&&!v.length)exact++;
+      missed=missed.concat(m);over=over.concat(v);
+    });
+    var pass=!missed.length&&!over.length;
+    var h='<div class="verdict '+(pass?"v-ok":"v-no")+'">'+(pass?"Kriterium erfüllt. ":"Noch nicht. ")+
+      'Ziel: alle '+out.length+' Abfragen exakt.</div>'+
+      '<div class="stats"><div class="stat"><span class="lbl">Abfragen exakt</span><b>'+exact+'/'+out.length+'</b></div>'+
+      '<div class="stat"><span class="lbl">Übersehen</span><b style="color:'+(missed.length?"var(--warn)":"var(--ok)")+'">'+missed.length+'</b></div></div>';
+    if(missed.length)h+='<div class="verdict v-no" style="font-size:14px">Übersehen heißt: du hältst die Karte für gespielt, sie liegt aber noch. Genau da spielst du hinein.</div>';
+    h+=itemsBlock("Übersehen — liegt noch draußen",missed);
+    h+=itemsBlock("Zu vorsichtig — war längst gespielt",over);
+    mark(8,pass,exact+"/"+out.length);
+    doneScreen(h,function(){s8run(n)});
+  }
+}
+
+/* ---------- Spielhand (Stufe 9) ---------- */
+var SPIELE=[{k:"grand",t:"Grand"},{k:"farb",t:"Farbspiel"},{k:"hand",t:"+ eigene Hand"}];
+function introS9(){
+  $("#ex-intro").innerHTML='<h2>Spielhand</h2>'+
+   '<p class="hint">Die Karten kommen stichweise, drei auf einmal, gemischt wie am Tisch. Markieren musst du nur, was zählt — die Trümpfe. Der Rest läuft vorbei.</p>'+
+   '<p class="crit">Fertig, wenn du keinen Trumpf übersiehst.</p>'+
+   '<div class="lbl">Spiel</div><div class="row3" id="o9a"></div>'+
+   '<div class="lbl" style="margin-top:16px">Takt je Stich</div><div class="row3" id="o9b"></div>'+
+   '<p class="hint" style="margin:12px 0 16px">Grand: nur die vier Buben sind Trumpf. Farbspiel: elf Trümpfe. Mit eigener Hand kennst du zehn Karten vorab — dann zählt, was die Gegner noch haben können.</p>'+
+   '<button class="btn solid" id="go">Geben</button>';
+  optRow("o9a",SPIELE.map(function(x){return x.k}),function(){return OPTS.spiel},
+    function(v){return SPIELE.filter(function(x){return x.k===v})[0].t},
+    function(v){OPTS.spiel=v;saveOpts()});
+  optRow("o9b",[0,4000,3000],function(){return OPTS.takt},
+    function(v){return v?paceLabel(v):"selbst"},
+    function(v){OPTS.takt=+v;saveOpts()});
+  $("#go").onclick=function(){s9run(OPTS.spiel,OPTS.takt)};
+}
+function s9run(mode,takt){
+  var ts=mode==="grand"?-1:Math.floor(Math.random()*4);
+  var trumps=trumpList(ts);
+  var hand=mode==="hand"?shuffle(allIdx()).slice(0,10).sort(function(a,b){return a-b}):[];
+  var tricks=mode==="hand"?6:8;
+  var played=shuffle(without(allIdx(),hand)).slice(0,tricks*3);
+  startRun();
+  brief();
+
+  function brief(){
+    stopTimers();
+    $("#ex-prog").textContent="";$("#ex-note").textContent="";
+    $("#ex-stage").className="stage short";
+    $("#ex-stage").innerHTML='<div><div class="big">'+(ts<0?"Grand":"Trumpf "+SUITS[ts].s+" "+SUITS[ts].n)+'</div>'+
+      '<div class="lbl" style="margin-top:8px">'+trumps.length+' Trümpfe \u00b7 '+tricks+' Stiche</div></div>';
+    $("#ex-ctrl").innerHTML=
+      (hand.length?'<div class="panel"><div class="lbl">Deine Hand</div><div class="hand">'+
+        hand.map(cardTag).join(" \u00b7 ")+'</div></div>':'')+
+      '<button class="btn solid" id="los">Los</button>';
+    $("#los").onclick=function(){
+      dealPhase({list:played,per:3,pace:takt,btn:"Weiter",
+        note:ts<0?"Grand":"Trumpf "+SUITS[ts].s,
+        label:function(k){return "Stich "+(k/3+1)+" von "+tricks},
+        onDone:roll});
+    };
+  }
+  function roll(){
+    var right=without(trumps,played.concat(hand));
+    pickPhase({
+      q:"Welche Trümpfe sind noch draußen?",
+      sub:hand.length?"Nicht gefallen und nicht bei dir.":"Nicht gefallen.",
+      aside:hand.length?"Deine Hand: "+hand.map(cardTag).join(" \u00b7 "):"",
+      items:trumps,
+      onDone:function(sel){finish(right,sel)}
+    });
+  }
+  function finish(right,sel){
+    stopTimers();
+    $("#ex-run").className="hide";$("#ex-done").className="";
+    var missed=without(right,sel),over=without(sel,right);
+    var pass=!missed.length;
+    var h='<div class="verdict '+(pass?"v-ok":"v-no")+'">'+
+      (pass?"Kein Trumpf übersehen. ":"Noch nicht. ")+'Ziel: keinen Trumpf übersehen.</div>'+
+      '<div class="stats"><div class="stat"><span class="lbl">Übersehen</span><b style="color:'+
+      (missed.length?"var(--warn)":"var(--ok)")+'">'+missed.length+'</b></div>'+
+      '<div class="stat"><span class="lbl">Zu vorsichtig</span><b>'+over.length+'</b></div></div>';
+    if(missed.length)h+='<div class="verdict v-no" style="font-size:14px">Da spielst du hinein: du hältst den Trumpf für weg, er liegt aber noch bei einem Gegner.</div>';
+    h+=itemsBlock("Übersehen — liegt noch draußen",missed);
+    h+=itemsBlock("Zu vorsichtig — gefallen oder bei dir",over);
+    h+='<div class="lbl" style="margin-top:20px">Alle Trümpfe von oben</div>';
+    trumps.forEach(function(i){
+      var st=hand.indexOf(i)>-1?"bei dir":(played.indexOf(i)>-1?"gefallen":"noch draußen");
+      h+='<div class="item"><span class="c">'+cardLabel(i)+'</span><span class="v">'+st+'</span></div>';
+    });
+    mark(9,pass,missed.length?missed.length+"\u00d7 übersehen":"sauber");
+    doneScreen(h,function(){s9run(mode,takt)});
   }
 }
 
@@ -606,7 +931,8 @@ function relTime(ts){
 
 /* Nur Trainingsdaten — niemals der Token. */
 function snapshot(){
-  return {app:"kartenpalast",v:1,updated:META.updated||Date.now(),palace:P,prog:prog,s3suits:s3suits};
+  return {app:"kartenpalast",v:1,updated:META.updated||Date.now(),
+          palace:P,prog:prog,s3suits:s3suits,opts:OPTS};
 }
 function normPalace(o){
   var out={rooms:[],read:!!(o&&o.read)};
@@ -627,6 +953,10 @@ function applySnap(o){
   prog=(o.prog&&typeof o.prog==="object")?o.prog:{};save("kp.prog",prog);
   var su=[].concat(o.s3suits||[]).filter(function(x){return x===0||x===1||x===2||x===3});
   s3suits=su.length?su:[0];save("kp.s3suits",s3suits);
+  if(o.opts&&typeof o.opts==="object"){
+    for(var k in OPTS)if(k in o.opts)OPTS[k]=o.opts[k];
+    save("kp.opts",OPTS);
+  }
   META.updated=+o.updated||Date.now();META.remote=META.updated;save("kp.meta",META);
   GH.synced=Date.now();ghSave();
   return true;
@@ -806,7 +1136,7 @@ $("#clrprog").onclick=function(){
 };
 $("#clrall").onclick=function(){
   if(confirm("Palast, Punkte und Fortschritt unwiderruflich löschen?")){
-    ["kp.palace","kp.prog","kp.s3suits","kp.meta"].forEach(function(k){localStorage.removeItem(k)});
+    ["kp.palace","kp.prog","kp.s3suits","kp.meta","kp.opts"].forEach(function(k){localStorage.removeItem(k)});
     location.reload();
   }
 };
